@@ -12,7 +12,7 @@ void gal::renderer_opengl::VAO::bind() {
 	glBindVertexArray(handle);
 }
 
-void gal::renderer_opengl::VAO::bind() {
+void gal::renderer_opengl::VAO::unbind() {
 	glBindVertexArray(0);
 }
 
@@ -42,7 +42,7 @@ void gal::renderer_opengl::VAO::add_attributes(Buffer<T>& buffer, size_t n, gal:
 }
 
 template <typename T>
-void gal::renderer_opengl::VAO::add_attributes(Buffer<T>& buffer, std::vector<VertexAttribute> attributes) {
+void gal::renderer_opengl::VAO::add_attributes(Buffer<T>& buffer, std::vector<VertexAttribute>& attributes) {
 	bind();
 	buffer.bind();
 

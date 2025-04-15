@@ -17,7 +17,7 @@ class gal::renderer_opengl::Buffer {
 
 		std::optional<VAO> vao;
 
-		Buffer(GLint type, GLboolean dynamic) : type(type), dynamic(dynamic);
+		Buffer(GLint type, GLboolean dynamic);
 		~Buffer();
 
 		void bind();

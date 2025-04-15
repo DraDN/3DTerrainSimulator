@@ -22,7 +22,7 @@ void gal::renderer_opengl::Camera::_calculate_projection() {
 	}
 }
 
-gal::renderer_opengl::Camera::Camera(glm::vec2 proj_size, glm::vec3 pos, glm::vec3 look_at, float fov = 0.f) {
+gal::renderer_opengl::Camera::Camera(glm::vec2 proj_size, glm::vec3 pos, glm::vec3 look_at, float fov) {
 	is_ortho = (fov == 0.f);
 	size = proj_size;
 	this->fov = fov;
@@ -111,4 +111,19 @@ glm::mat4 gal::renderer_opengl::Camera::get_projection() {
 
 glm::mat4 gal::renderer_opengl::Camera::get_view() {
 	return view;
+}
+
+void gal::renderer_opengl::ControllableCamera::rotate_by(float d_yaw, float d_pitch) {
+	yaw += d_yaw * look_sensitivity;
+	pitch += d_pitch * look_sensitivity;
+
+	rotate(yaw, pitch);
+}
+
+void gal::renderer_opengl::ControllableCamera::move_by(glm::vec3 d_pos) {
+	position += d_pos.z * front * move_speed;
+	position += d_pos.x * glm::normalize(glm::cross(front, up)) * move_speed;
+	position += d_pos.y * up * move_speed;
+
+	view = glm::lookAt(position, position+front, up);
 }

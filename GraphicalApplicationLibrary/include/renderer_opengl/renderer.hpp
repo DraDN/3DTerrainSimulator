@@ -5,7 +5,7 @@
 #include <renderer_opengl/camera.hpp>
 
 #include <glm_tools.hpp>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include <optional>
 
 class gal::renderer_opengl::RendererOpenGL {
@@ -15,7 +15,7 @@ class gal::renderer_opengl::RendererOpenGL {
 		
 		// TODO: exchange model for a "scene" class, a container of multiple models
 		// void render(Model& model, const std::optional<Camera>& camera = {}, const std::optional<Light>& light = {}, const std::optional<Shader>& shader = {});
-		void render(Model& model, Shader& shader, Camera& camera, std::optional<RenderTarget&> render_target = {}, std::optional<Light&> light = {});
+		void render(Model& model, Shader& shader, Camera& camera, std::optional<RenderTarget>* render_target = nullptr, std::optional<Light>* light = nullptr);
 		// void render_to(Model& model, Shader& shader, Camera& camera, RenderTarget& render_target, std::optional<Light&> light = {});
 		void clear();
 		

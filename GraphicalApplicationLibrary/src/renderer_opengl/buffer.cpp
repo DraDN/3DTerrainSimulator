@@ -1,11 +1,11 @@
 #include <renderer_opengl/buffer.hpp>
 
 template <typename T>
-gal::renderer_opengl::Buffer<T>::Buffer(GLint type, GLboolean dynamic) {
+gal::renderer_opengl::Buffer<T>::Buffer(GLint type, GLboolean dynamic) : type(type), dynamic(dynamic) {
 	glGenBuffers(1, &handle);
 
 	if (type == GL_ARRAY_BUFFER) {
-		vao.VAO();
+		vao.value() = VAO();
 	}
 }
 
@@ -29,7 +29,7 @@ void gal::renderer_opengl::Buffer<T>::unbind() {
 template <typename T>
 void gal::renderer_opengl::Buffer<T>::add_vertex_attributes(std::vector<VertexAttribute>& vertex_attributes) {
 	if (!vao.has_value()) return;
-	vao->add_attributes(handle, vertex_attributes);
+	vao->add_attributes(this, &vertex_attributes);
 }
 
 template <typename T>

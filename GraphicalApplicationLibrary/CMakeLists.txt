@@ -22,7 +22,14 @@ set(IMGUI_INCLUDE_DIR "./dependencies/imgui")
 # add_library(${PROJECT_NAME} INTERFACE)
 add_library(${PROJECT_NAME} STATIC src/renderer_opengl/buffer.cpp
 								   src/renderer_opengl/texture.cpp
-								   src/renderer_opengl/vao.cpp)
+								   src/renderer_opengl/vao.cpp
+								   src/renderer_opengl/camera.cpp
+								   src/renderer_opengl/light.cpp
+								   src/renderer_opengl/render_target.cpp
+								   src/renderer_opengl/renderer.cpp
+								   src/renderer_opengl/shader.cpp
+								   src/renderer_opengl/texture.cpp
+								   src/window_sdl.cpp)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES 
 	VERSION ${PROJECT_VERSION}

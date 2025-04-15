@@ -15,7 +15,7 @@ class gal::renderer_opengl::VAO {
 		template <typename T>
 		void add_attributes(Buffer<T>& buffer, size_t n, VertexAttribute attributes[]);
 		template <typename T>
-		void add_attributes(Buffer<T>& buffer, std::vector<VertexAttribute> attributes);
+		void add_attributes(Buffer<T>& buffer, std::vector<VertexAttribute>& attributes);
 
 		GLuint handle;
 };

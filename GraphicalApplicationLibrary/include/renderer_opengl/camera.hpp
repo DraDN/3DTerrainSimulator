@@ -18,16 +18,16 @@ class gal::renderer_opengl::Camera {
 		// void rotate(float angle, glm::vec3 axis);
 		void rotate(float yaw, float pitch);
 		void rotate_by(float d_angle, glm::vec3 axis);
-		void rotate_by(float d_yaw, float d_pitch);
+		virtual void rotate_by(float d_yaw, float d_pitch);
 
 		void zoom(float zoom);
 
 		void set_position(glm::vec3 new_pos);
-		void move_by(glm::vec3 d_pos);
+		virtual void move_by(glm::vec3 d_pos);
 
 		glm::mat4 get_projection();
 		glm::mat4 get_view();
-	private:
+	protected:
 		glm::mat4 projection;
 		glm::mat4 view;
 		
@@ -40,4 +40,15 @@ class gal::renderer_opengl::Camera {
 		bool is_ortho;
 		void _calculate_projection();
 		float _angle_between(glm::vec3 a, glm::vec3 b, glm::vec3 origin, bool acos_or_asin);
+};
+
+class gal::renderer_opengl::ControllableCamera : Camera {
+	public:
+		using Camera::Camera;
+
+		void rotate_by(float d_yaw, float d_pitch);
+		void move_by(glm::vec3 d_pos);
+
+		float look_sensitivity = 1.f;
+		float move_speed = 1.f;
 };
