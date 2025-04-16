@@ -59,7 +59,7 @@ gal::GraphicsApp_SDL_OpenGL::~GraphicsApp_SDL_OpenGL() {
 	SDL_Quit();
 }
 
-void gal::GraphicsApp_SDL_OpenGL::set_functions(WindowFunction init, WindowFunction update, WindowFunction render, WindowFunction destroy, UIFunction ui_render = nullptr) {
+void gal::GraphicsApp_SDL_OpenGL::set_functions(WindowFunction init, WindowFunction update, WindowFunction render, WindowFunction destroy, UIFunction ui_render) {
 	window->initialize = init;
 	window->update = update;
 	window->render = render;

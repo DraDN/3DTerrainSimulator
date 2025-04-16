@@ -29,7 +29,10 @@ add_library(${PROJECT_NAME} STATIC src/renderer_opengl/buffer.cpp
 								   src/renderer_opengl/renderer.cpp
 								   src/renderer_opengl/shader.cpp
 								   src/renderer_opengl/texture.cpp
-								   src/window_sdl.cpp)
+								   src/renderer_opengl/model.cpp
+								   src/ui_imgui/implementation/sdl/ui_context_sdl.cpp
+								   src/window_sdl.cpp
+								   src/graphics_app_sdl_opengl.cpp)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES 
 	VERSION ${PROJECT_VERSION}

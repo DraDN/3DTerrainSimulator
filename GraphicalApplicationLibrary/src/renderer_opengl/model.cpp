@@ -1,10 +1,10 @@
 #include <renderer_opengl/model.hpp>
 
-gal::renderer_opengl::Model::Model(GLenum render_mode = GL_TRIANGLES, bool dynamic_buffers = false) : vertex_buffer(GL_ARRAY_BUFFER, dynamic_buffers), index_buffer(GL_ELEMENT_ARRAY_BUFFER, dynamic_buffers) {
+gal::renderer_opengl::Model::Model(GLenum render_mode, bool dynamic_buffers) : vertex_buffer(GL_ARRAY_BUFFER, dynamic_buffers), index_buffer(GL_ELEMENT_ARRAY_BUFFER, dynamic_buffers) {
 	transform_matrix = glm::mat4(1.f);
 }
 
-gal::renderer_opengl::Model::Model(std::vector<VertexAttribute>& vertex_attributes, GLenum render_mode = GL_TRIANGLES, bool dynamic_buffers = false) :
+gal::renderer_opengl::Model::Model(std::vector<VertexAttribute>& vertex_attributes, GLenum render_mode, bool dynamic_buffers) :
  vertex_buffer(GL_ARRAY_BUFFER, dynamic_buffers), index_buffer(GL_ELEMENT_ARRAY_BUFFER, dynamic_buffers) {
 	transform_matrix = glm::mat4(1.f);
 	vertex_buffer.add_vertex_attributes(vertex_attributes);
