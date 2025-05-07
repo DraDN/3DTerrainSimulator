@@ -71,7 +71,7 @@ gal::renderer_opengl::Shader::Shader(std::string vs_path, std::string fs_path, s
 	glDeleteShader(fs_handle);
 }
 
-gal::renderer_opengl::Shader::Shader(std::vector<ShaderInfo> shader_information, std::vector<VertexAttribute> uniforms) {
+gal::renderer_opengl::Shader::Shader(std::vector<ShaderInfo> shader_information, std::vector<VertexAttribute> attributes) {
 	handle = glCreateProgram();
 
 	std::vector<GLuint> shader_handles;
@@ -82,8 +82,8 @@ gal::renderer_opengl::Shader::Shader(std::vector<ShaderInfo> shader_information,
 		glAttachShader(handle, shader_handles.back());
 	}
 
-	for (auto& uni : uniforms)
-		glBindAttribLocation(handle, uni.index, uni.name);
+	for (auto& att : attributes)
+		glBindAttribLocation(handle, att.index, att.name);
 	
 	glLinkProgram(handle);
 

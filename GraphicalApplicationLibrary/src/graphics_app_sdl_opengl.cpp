@@ -68,10 +68,11 @@ void gal::GraphicsApp_SDL_OpenGL::set_functions(WindowFunction init, WindowFunct
 		ui.value().render_function = ui_render;
 }
 
-void gal::GraphicsApp_SDL_OpenGL::poll_event(Event_SDL_OpenGL& ev) {
-	SDL_PollEvent(&ev.event);
+bool gal::GraphicsApp_SDL_OpenGL::poll_event(Event_SDL_OpenGL& ev) {
+	bool is_event = SDL_PollEvent(&ev.event);
 	ui.value().process_events(ev.event);
-	ev.IO = ImGui::GetIO();
+	ev.IO = &ImGui::GetIO();
+	return is_event;
 }
 
 void gal::GraphicsApp_SDL_OpenGL::launch() {

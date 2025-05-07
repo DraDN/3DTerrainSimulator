@@ -2,4 +2,6 @@ set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 file(GLOB_RECURSE IMGUI_SRC_FILES ${IMGUI_DIR}/*.cpp)
 
 target_sources(${PROJECT_NAME} PRIVATE ${IMGUI_SRC_FILES})
-target_include_directories(${PROJECT_NAME} PRIVATE ${IMGUI_DIR})
+target_include_directories(${PROJECT_NAME} PUBLIC 
+	$<BUILD_INTERFACE:${IMGUI_DIR}>
+	$<INSTALL_INTERFACE:include/imgui>)

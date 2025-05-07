@@ -14,6 +14,7 @@ void gal::renderer_opengl::RendererOpenGL::render(Model& model, Shader& shader, 
 		RenderTarget::bind_window_target(window_size);
 	
 	if (wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	shader.set("model", model.transform_matrix);
 	model.render();
 
 	if (wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);

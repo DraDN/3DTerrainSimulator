@@ -22,7 +22,9 @@ void gal::renderer_opengl::Model::upload_data() {
 void gal::renderer_opengl::Model::render() {
 	vertex_buffer.bind();
 	index_buffer.bind();
+	bind_callback();
 	glDrawElements(render_mode, index_buffer.data.size(), index_buffer.type, 0);
+	unbind_callback();
 	vertex_buffer.unbind();
 	index_buffer.unbind();
 }
