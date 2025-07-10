@@ -19,6 +19,7 @@ class gal::renderer_opengl::VAO {
 
 		GLuint handle;
 		int VERTEX_SIZE;
+		int VERTEX_ELEMENT_NUMBER;
 };
 
 #include <renderer_opengl/vao.tpp>

@@ -25,7 +25,6 @@ void gal::renderer_opengl::RenderTarget::bind() {
 	glBindFramebuffer(GL_FRAMEBUFFER, handle);
 }
 
-// void gal::renderer_opengl::RenderTarget::unbind() {
 void gal::renderer_opengl::RenderTarget::bind_window_target(glm::uvec2 size) {
 	glViewport(0, 0, size.x, size.y);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);

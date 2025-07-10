@@ -10,9 +10,9 @@ namespace gal {
 		class RenderTarget;
 		class Texture;
 		class Shader;
+		struct ShaderInfo;
+		struct ShaderAttribute;
 		class Camera;
-		// class CameraOrthographic;
-		// class CameraPerspective;
 		class ControllableCamera;
 		class Light;
 		class Model;

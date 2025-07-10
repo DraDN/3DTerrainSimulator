@@ -22,22 +22,18 @@ void gal::WindowSDL::loop() {
 	running = true;
 	while (running) {
 		update();
-		SDL_Log("window updated");
 		_render();
-		SDL_Log("window rendered");
 	}
 }
 
 void gal::WindowSDL::_render() {
-	SDL_Log("before rendering");
 	if (render == nullptr)
 		SDL_Log("render not set!");
 	else
 		render();
-	SDL_Log("window render 1");
+
 	if (opengl_context.has_value()) {
 		SDL_GL_SwapWindow(handle);
-		SDL_Log("window render 2");
 	}
 }
 

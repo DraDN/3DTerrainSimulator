@@ -35,8 +35,12 @@ void gal::renderer_opengl::VAO::add_attributes(Buffer<T>& buffer, std::vector<Ve
 	size_t offset = 0;
 	GLsizei stride = 0;
 
-	for (auto& att : attributes)
+	VERTEX_ELEMENT_NUMBER = 0;
+
+	for (auto& att : attributes) {
 		stride += att.size * sizeof(att.type);
+		VERTEX_ELEMENT_NUMBER += att.size;
+	}
 	
 	VERTEX_SIZE = stride;
 

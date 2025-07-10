@@ -1,0 +1,52 @@
+#version 430
+
+layout (local_size_x = 1, local_size_x = 1) in;
+layout (rgba32f, binding = 0) uniform image2D normal_texture;
+uniform float normals_mult;
+uniform float distance_between_vertecies;
+
+layout (std430, binding = 2) buffer heights_buffer {
+	float heights[];
+};
+
+float height(uvec2 pos) {
+	pos.x = max(0, min(pos.x, gl_NumWorkGroups.x));
+	pos.y = max(0, min(pos.y, gl_NumWorkGroups.z));
+	uint index = pos.y * (gl_NumWorkGroups.x) + pos.x;
+
+	return heights[index];
+}
+
+// https://learnopengl.com/Advanced-Lighting/Normal-Mapping
+void main() {
+	uvec2 position = gl_GlobalInvocationID.xz;
+	uvec3 off = ivec3(1, 1, 0);
+
+	float hL = height(position.xy - off.xz);
+	float hR = height(position.xy + off.xz);
+	float hD = height(position.xy - off.zy);
+	float hU = height(position.xy + off.zy);
+
+	vec3 N = vec3(0.0);
+	N.x = hL - hR;
+	N.y = hD - hU;
+	N.z = (distance_between_vertecies / normals_mult) * 2.0;
+
+	N = normalize(N);
+	N = vec3(N.x, N.z, N.y);
+	// invert the y with z because i think the math thinks the plane is like on the x and y when it is really on the x and z or something like that
+	
+	vec3 rgb_N = N * vec3(0.5) + vec3(0.5);
+
+	ivec2 pixel_coords = ivec2(gl_GlobalInvocationID.xz);
+	vec4 pixel = vec4(rgb_N, 1.0);
+
+	float temp_debug = (0.5f + height(position) / 15.f) / 2.f;
+	vec4 debug_col = vec4(temp_debug, temp_debug, temp_debug, 1.0);
+
+	vec4 debug_col2 = vec4(0.f, 0.f, pixel.b, 1.f);
+
+	imageStore(normal_texture, pixel_coords, pixel);
+	// imageStore(normal_texture, pixel_coords, debug_col);
+	// imageStore(normal_texture, pixel_coords, debug_col2);
+}

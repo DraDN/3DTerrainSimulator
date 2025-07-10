@@ -12,7 +12,6 @@ class gal::renderer_opengl::Model {
 	public:
 		Model(GLenum render_mode = GL_TRIANGLES, bool dynamic_buffers = false);
 		Model(std::vector<VertexAttribute>& vertex_attributes, GLenum render_mode = GL_TRIANGLES, bool dynamic_buffers = false);
-		// ~Model();
 
 		void add_vertex_attributes(std::vector<VertexAttribute>& vertex_attributes);
 		void upload_data();
@@ -22,8 +21,8 @@ class gal::renderer_opengl::Model {
 
 		glm::mat4 transform_matrix;
 
-		Buffer<float> vertex_buffer;
-		Buffer<uint16_t> index_buffer;
+		Buffer<GLfloat> vertex_buffer;
+		Buffer<GLuint> index_buffer;
 		std::function<void()> bind_callback;
 		std::function<void()> unbind_callback;
 };

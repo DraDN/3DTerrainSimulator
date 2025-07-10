@@ -9,20 +9,22 @@
 #include <string>
 #include <vector>
 
-struct ShaderInfo {
+struct gal::renderer_opengl::ShaderInfo {
 	std::string path;
 	GLenum type;
+};
+
+struct gal::renderer_opengl::ShaderAttribute {
+	GLuint index;
+	std::string name;
 };
 
 class gal::renderer_opengl::Shader {
 	public:
 		GLuint handle;
 
-		// Shader(const char* vs_path, const char* fs_path, size_t n, VertexAttribute attributes[]);
-		Shader(std::string vs_path, std::string fs_path, size_t n, std::vector<VertexAttribute> attributes);
-		// Shader(const char* comp_s_path);
-		// Shader(std::string comp_s_path);
-		Shader(std::vector<ShaderInfo> shader_information, std::vector<VertexAttribute> attributes);
+		Shader(std::string vs_path, std::string fs_path, size_t n, std::vector<ShaderAttribute> attributes);
+		Shader(std::vector<ShaderInfo> shader_information, std::vector<ShaderAttribute> attributes);
 		~Shader();
 
 		void bind();

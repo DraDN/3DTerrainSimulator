@@ -12,7 +12,6 @@ class gal::renderer_opengl::RenderTarget {
 		~RenderTarget();
 
 		void bind();
-		// void unbind();
 		static void bind_window_target(glm::uvec2 size);
 
 		GLuint handle;

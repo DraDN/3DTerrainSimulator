@@ -1,26 +1,50 @@
 #include <terrain_generator.hpp>
-#include <future>
-#include <thread>
+#include <SDL.h>
+#include <stdexcept>
+
+#define HEIGHTS_BUFFER_SHADER_BINDING_BASE 2
 
 TerrainGenerator::TerrainGenerator(glm::uvec2 size, GLenum available_texture_unit) :
-		normal_multiplication(1),
+		normal_multiplication(1), distance_between_vertecies(1.f), model_size(size),
 		normal_map(size.x*normal_multiplication, size.y*normal_multiplication, GL_RGBA32F, GL_RGBA, GL_FLOAT, available_texture_unit, GL_TEXTURE_2D),
-		heights(GL_SHADER_STORAGE_BUFFER, false), materials(GL_SHADER_STORAGE_BUFFER, false) {
+		heights(GL_SHADER_STORAGE_BUFFER, false), materials(GL_SHADER_STORAGE_BUFFER, false), model(GL_TRIANGLES) {
 
 	model.bind_callback = [&] {
+		if (construct_info.ready_to_upload) {
+			model.upload_data();
+			calculate_normals();
+			construct_info.ready_to_upload = false;
+		}
 		normal_map.bind();
-		materials.upload_data();
+		// materials.upload_data();
 		// POTENTIAL PROBLEM - materials.bind() needed(?)
-		materials.bind_base(1);
+		// materials.bind_base(1);
 	};
 
 	model.unbind_callback = [&] {
-		normal_map.unbind();
 		materials.unbind_base(1);
 	};
+GLenum err = glGetError();
+if (err != GL_NO_ERROR) {
+    SDL_Log("OpenGL error during terrain generator init: %d", err);
+	throw std::runtime_error("OpenGL error during draw");
+}
 
-	std::vector<ShaderInfo> shader_information = {{.path = "", .type = GL_COMPUTE_SHADER}};
-	normal_map_gen_shader = std::make_unique<gal::renderer_opengl::Shader>(shader_information, std::vector<gal::renderer_opengl::VertexAttribute>());
+	std::vector<gal::renderer_opengl::VertexAttribute> vert_atts = {
+		{ .index = 0,
+		  .name = "position",
+		  .type = GL_FLOAT,
+		  .size = 3},
+		{ .index = 1,
+		  .name = "aTexCoords",
+		  .type = GL_FLOAT,
+		  .size = 2}
+	};
+
+	model.vertex_buffer.add_vertex_attributes(vert_atts);
+
+	std::vector<gal::renderer_opengl::ShaderInfo> shader_information = {{.path = "./res/normals_shader.comp", .type = GL_COMPUTE_SHADER}};
+	normal_map_gen_shader = std::make_unique<gal::renderer_opengl::Shader>(shader_information, std::vector<gal::renderer_opengl::ShaderAttribute>());
 
 	materials.data.emplace_back();
 
@@ -28,16 +52,42 @@ TerrainGenerator::TerrainGenerator(glm::uvec2 size, GLenum available_texture_uni
 	construct_info.reset();
 }
 
+void TerrainGenerator::generate_test_triangle() {
+	model.vertex_buffer.data.push_back(0.f);
+	model.vertex_buffer.data.push_back(0.5f);
+	model.vertex_buffer.data.push_back(0.f);
+	model.vertex_buffer.data.push_back(0.f);
+	model.vertex_buffer.data.push_back(0.f);
+
+	model.vertex_buffer.data.push_back(-0.5f);
+	model.vertex_buffer.data.push_back(-0.5f);
+	model.vertex_buffer.data.push_back(0.f);
+	model.vertex_buffer.data.push_back(0.f);
+	model.vertex_buffer.data.push_back(0.f);
+
+	model.vertex_buffer.data.push_back(0.5f);
+	model.vertex_buffer.data.push_back(-0.5f);
+	model.vertex_buffer.data.push_back(0.f);
+	model.vertex_buffer.data.push_back(0.f);
+	model.vertex_buffer.data.push_back(0.f);
+
+	model.index_buffer.data.push_back(0);
+	model.index_buffer.data.push_back(1);
+	model.index_buffer.data.push_back(2);
+	model.upload_data();
+}
+
 void TerrainGenerator::generate() {
 	construct_info.reset();
 	model.vertex_buffer.data.clear();
 	model.index_buffer.data.clear();
 
-	size_t size_vertex_buffer = (model_size.x + 1) * (model_size.y + 1) * model.vertex_buffer.vao->VERTEX_SIZE;
+	size_t size_vertex_buffer = (model_size.x + 1) * (model_size.y + 1) * model.vertex_buffer.vao->VERTEX_ELEMENT_NUMBER;
 	size_t size_index_buffer = model_size.x * model_size.y * 2 * 3;
 
 	model.vertex_buffer.data.resize(size_vertex_buffer);
 	model.index_buffer.data.resize(size_index_buffer);
+	SDL_Log("model vertex buffer size - %d", size_vertex_buffer);
 
 	glm::uvec2 normals_size = model_size;
 	normals_size.x *= normal_multiplication;
@@ -59,7 +109,9 @@ void TerrainGenerator::cancle_generation() {
 void TerrainGenerator::launch_workers() {
 	std::vector<std::future<void>> builders;
 
-	noise.get_uniform_grid_2d(heights.data, model_size.x * normal_multiplication, model_size.y * normal_multiplication);
+	AlignedVector<float> noiseOutput(heights.data.size());
+	noise.get_uniform_grid_2d(noiseOutput, model_size.x * normal_multiplication, model_size.y * normal_multiplication);
+	std::copy(noiseOutput.begin(), noiseOutput.end(), heights.data.begin()); // move the data from the aligned becotr to the buffer (faster method)
 
 	float start_z = -(float)(model_size.y)/2.f;
 	unsigned int length_z = std::floor((model_size.y+1) / construct_info.thread_num);
@@ -69,18 +121,16 @@ void TerrainGenerator::launch_workers() {
 		// integer that allocates one more row or not in order to divide uneven numbers across threads
 		evenly_divider = (thr < (model_size.y + 1) % construct_info.thread_num);
 
-		builders.push_back(std::async(std::launch::async, &TerrainGenerator::builder, this, thr, model_size.x, model_size.y, start_z, length_z + evenly_divider, distance_between_vertecies, model.vertex_buffer.vao->VERTEX_SIZE, normal_multiplication));
+		SDL_Log("builder added");
+		builders.push_back(std::async(std::launch::async, &TerrainGenerator::builder, this, thr, model_size.x, model_size.y, start_z, length_z + evenly_divider, distance_between_vertecies, model.vertex_buffer.vao->VERTEX_ELEMENT_NUMBER, normal_multiplication));
 	}
 
 	for (auto& builder : builders) {
 		builder.wait();
 	}
 
-	calculate_normals();
-	model.upload_data();
-
-	// construct_info.constructing = false;
 	construct_info.reset();
+	construct_info.ready_to_upload = true;
 }
 
 void TerrainGenerator::builder(int id, unsigned int size_x, unsigned int size_z, float start_z, float work_chunk_size, float distance_between_vertecies, float vertex_size, float normal_mult) {
@@ -88,42 +138,57 @@ void TerrainGenerator::builder(int id, unsigned int size_x, unsigned int size_z,
 	glm::vec2 end( -start.x, start_z + work_chunk_size -1.f);
 
 	unsigned int row = start.y + size_z / 2.f;
-	//          row where we at |  size of row |
-	unsigned int at_vertex  = row * (size_x + 1) * vertex_size;
-	unsigned int at_index   = row * (size_x    ) * 6;
-	unsigned int last_index = row * (size_x + 1); 
+	//              row where we at |  size of row |
+	unsigned int at_vertex     = row * (size_x + 1) * vertex_size;
+	unsigned int at_index      = row * (size_x - 1) * 6;
+	unsigned int current_index = row * (size_x + 1); 
+
+	SDL_Log("builder started!");
 
 	for (float z = start.y; z <= end.y; z += 1.f) {
 		for (float x = start.x; x <= end.x; x += 1.f) {
-			if (construct_info.cancel_generation)
+			if (construct_info.cancel_generation) {
+				SDL_Log("construction canceled!!");
 				return;
+			}
 			
 			// vertex positions
-			model.vertex_buffer.data.at(at_vertex)     = x * distance_between_vertecies;
-			model.vertex_buffer.data.at(at_vertex + 1) = heights.data[z * normal_mult + x];
-			model.vertex_buffer.data.at(at_vertex + 2) = z * distance_between_vertecies;
+			try {
+				model.vertex_buffer.data.at(at_vertex)     = x * distance_between_vertecies;
+				model.vertex_buffer.data.at(at_vertex + 1) = heights.data[at_vertex/vertex_size * normal_mult];
+				model.vertex_buffer.data.at(at_vertex + 1) = 0.f;
+				model.vertex_buffer.data.at(at_vertex + 2) = z * distance_between_vertecies;
 
-			// vertex texture coordonates
-			model.vertex_buffer.data.at(at_vertex + 3) = (x + size_x/2.f) / (size_x); // offset the position to start from 0 and then convert into 0 - 1 range
-			model.vertex_buffer.data.at(at_vertex + 4) = (z + size_z/2.f) / (size_z);
+				// vertex texture coordonates
+				model.vertex_buffer.data.at(at_vertex + 3) = (x + size_x/2.f) / (size_x); // offset the position to start from 0 and then convert into 0 - 1 range
+				model.vertex_buffer.data.at(at_vertex + 4) = (z + size_z/2.f) / (size_z);
 
-			at_vertex += vertex_size;
+				at_vertex += vertex_size;
 
-			// triangle 1
-			model.index_buffer.data.at(at_index)     = last_index;
-			model.index_buffer.data.at(at_index + 1) = last_index + size_x + 1;
-			model.index_buffer.data.at(at_index + 2) = last_index + 1;
+				// for edge vertecies we don't add triangles
+				if (x == end.x || z == end.y) continue;
 
-			// triangle 2
-			model.index_buffer.data.at(at_index + 3) = last_index + 1;
-			model.index_buffer.data.at(at_index + 4) = last_index + size_x + 1;
-			model.index_buffer.data.at(at_index + 5) = last_index + size_x + 2;
+				// triangle 1
+				model.index_buffer.data.at(at_index)     = current_index;
+				model.index_buffer.data.at(at_index + 1) = current_index + size_x + 1;
+				model.index_buffer.data.at(at_index + 2) = current_index + 1;
 
-			last_index ++;
-			at_index += 6;
-			
-			construct_info.progress++;
+				// triangle 2
+				model.index_buffer.data.at(at_index + 3) = current_index + 1;
+				model.index_buffer.data.at(at_index + 4) = current_index + size_x + 1;
+				model.index_buffer.data.at(at_index + 5) = current_index + size_x + 2;
+
+				current_index ++;
+				at_index += 6;
+			} catch (std::out_of_range& e) {
+				SDL_Log("something went wrong when asigning data! %s", e.what());
+			}
+				
+			construct_info.progress.fetch_add(1);
 		}
+		
+		// the current index before this increment is the last vertex on the previous line, so this acts as a 'new line increment'
+		current_index++;
 	}
 }
 
@@ -131,38 +196,15 @@ void TerrainGenerator::calculate_normals() {
 	normal_map_gen_shader->bind();
 	normal_map.bind();
 
-	normal_map_gen_shader->set("normals_mult", static_cast<uint32_t>(normal_multiplication));
+	normal_map_gen_shader->set("normals_mult", static_cast<float>(normal_multiplication));
 	normal_map_gen_shader->set("distance_between_vertecies", distance_between_vertecies);
 
 	heights.upload_data();
-	heights.bind_base(0);
+	heights.bind_base(HEIGHTS_BUFFER_SHADER_BINDING_BASE);
 
-	normal_map_gen_shader->dispatch_compute(model_size.x * normal_multiplication, 1, model_size.y * normal_multiplication);
+	normal_map_gen_shader->dispatch_compute((model_size.x +1) * normal_multiplication, 1, (model_size.y +1) * normal_multiplication);
 
 	normal_map_gen_shader->unbind();
-	heights.unbind_base(0);
 	normal_map.unbind();
+	heights.unbind_base(HEIGHTS_BUFFER_SHADER_BINDING_BASE);
 }
-
-// void TerrainGenerator::set_size(glm::uvec2 size) {
-// 	glm::uvec2 normals_size = size;
-// 	normals_size.x *= normal_multiplication;
-// 	normals_size.y *= normal_multiplication;
-// 	normals_size += glm::uvec2(1);
-
-// 	model_size = size;
-// 	normal_map.update(normals_size.x, normals_size.y);
-// 	heights.data.resize(normals_size.x * normals_size.y);
-// }
-
-// void TerrainGenerator::set_size(float x, float z) {
-// 	glm::uvec2 normals_size(x, z);
-// 	normals_size.x *= normal_multiplication;
-// 	normals_size.y *= normal_multiplication;
-// 	normals_size += glm::uvec2(1);
-
-// 	model_size.x = x;
-// 	model_size.y = z;
-// 	normal_map.update(normals_size.x, normals_size.y);
-// 	heights.data.resize(normals_size.x * normals_size.y);
-// }

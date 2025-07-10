@@ -13,7 +13,7 @@ void gal::GraphicsApp_SDL_OpenGL::_init_glew() {
 
 void gal::GraphicsApp_SDL_OpenGL::_prepare_opengl() {
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4.4);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
@@ -32,6 +32,13 @@ void gal::GraphicsApp_SDL_OpenGL::_init_opengl() {
 	SDL_GL_MakeCurrent(window->handle, window->opengl_context.value());
 
 	_init_glew();
+
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glViewport(0, 0, window->size.x, window->size.y);
 }
 
 gal::GraphicsApp_SDL_OpenGL::GraphicsApp_SDL_OpenGL(const char* title, glm::uvec2 size, bool has_ui, uint32_t flags) {
@@ -46,13 +53,6 @@ gal::GraphicsApp_SDL_OpenGL::GraphicsApp_SDL_OpenGL(const char* title, glm::uvec
 
 	if (has_ui)
 		ui.emplace(*window->handle, window->opengl_context.value());
-	
-	_render_intercept = [this]() {
-		if (ui.has_value()) {
-			ui.value().render();
-		}
-		window->render();
-	};
 }
 
 gal::GraphicsApp_SDL_OpenGL::~GraphicsApp_SDL_OpenGL() {
@@ -70,13 +70,22 @@ void gal::GraphicsApp_SDL_OpenGL::set_functions(WindowFunction init, WindowFunct
 
 bool gal::GraphicsApp_SDL_OpenGL::poll_event(Event_SDL_OpenGL& ev) {
 	bool is_event = SDL_PollEvent(&ev.event);
-	ui.value().process_events(ev.event);
-	ev.IO = &ImGui::GetIO();
+	if (ui.has_value()) {
+		ui->process_events(ev.event);
+		ev.IO = &ImGui::GetIO();
+	}
 	return is_event;
 }
 
 void gal::GraphicsApp_SDL_OpenGL::launch() {
-	window->render = _render_intercept;
+	_render_intercept = window->render;
+	window->render = [this]() {
+		if (ui.has_value()) 
+			ui.value().render();
+
+		_render_intercept();
+	};
+
 	window->loop();
 }
 

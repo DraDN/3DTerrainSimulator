@@ -5,6 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include <unordered_map>
+#include <SDL.h>
 
 static std::unordered_map<std::string, GLint> uniform_location_cache;
 GLuint gal::renderer_opengl::Shader::bound_shader_handle = 0;
@@ -25,6 +26,7 @@ static GLint _compile_shader(std::string path, GLenum type) {
 
 		shader_code_cpy = string_stream.str();
 	} catch(std::ifstream::failure e) {
+		SDL_Log("COULDNT READ SHADER FILE - %s", path.c_str());
 		exit(1);
 	}
 
@@ -39,13 +41,14 @@ static GLint _compile_shader(std::string path, GLenum type) {
 	if (!success) {
 		char buf[512];
 		glGetShaderInfoLog(shader_handler, 512, NULL, buf);
+		SDL_Log("Shader not successfully built! - %s", path.c_str());
 		exit(1);
 	}
 
 	return shader_handler;
 }
 
-gal::renderer_opengl::Shader::Shader(std::string vs_path, std::string fs_path, size_t n, std::vector<VertexAttribute> attributes) {
+gal::renderer_opengl::Shader::Shader(std::string vs_path, std::string fs_path, size_t n, std::vector<ShaderAttribute> attributes) {
 	GLuint vs_handle = _compile_shader(vs_path, GL_VERTEX_SHADER);
 	GLuint fs_handle = _compile_shader(fs_path, GL_FRAGMENT_SHADER);
 
@@ -54,7 +57,7 @@ gal::renderer_opengl::Shader::Shader(std::string vs_path, std::string fs_path, s
 	glAttachShader(handle, fs_handle);
 
 	for (auto& att : attributes)
-		glBindAttribLocation(handle, att.index, att.name);
+		glBindAttribLocation(handle, att.index, att.name.c_str());
 
 	glLinkProgram(handle);
 
@@ -64,14 +67,15 @@ gal::renderer_opengl::Shader::Shader(std::string vs_path, std::string fs_path, s
 	if (!linked) {
 		char buf[512];
 		glGetProgramInfoLog(handle, 512, NULL, buf);
-		exit(0);
+		SDL_Log("NOT LINKED!!!");
+		exit(1);
 	}
 
 	glDeleteShader(vs_handle);
 	glDeleteShader(fs_handle);
 }
 
-gal::renderer_opengl::Shader::Shader(std::vector<ShaderInfo> shader_information, std::vector<VertexAttribute> attributes) {
+gal::renderer_opengl::Shader::Shader(std::vector<ShaderInfo> shader_information, std::vector<ShaderAttribute> attributes) {
 	handle = glCreateProgram();
 
 	std::vector<GLuint> shader_handles;
@@ -83,7 +87,7 @@ gal::renderer_opengl::Shader::Shader(std::vector<ShaderInfo> shader_information,
 	}
 
 	for (auto& att : attributes)
-		glBindAttribLocation(handle, att.index, att.name);
+		glBindAttribLocation(handle, att.index, att.name.c_str());
 	
 	glLinkProgram(handle);
 
@@ -93,7 +97,8 @@ gal::renderer_opengl::Shader::Shader(std::vector<ShaderInfo> shader_information,
 	if (!linked) {
 		char buf[512];
 		glGetProgramInfoLog(handle, 512, NULL, buf);
-		exit(0);
+		SDL_Log("NOT LINKED!!!");
+		exit(1);
 	}
 	// TODO: add debuging logs
 

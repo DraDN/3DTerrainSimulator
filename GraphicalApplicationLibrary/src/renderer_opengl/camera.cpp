@@ -44,7 +44,6 @@ void gal::renderer_opengl::Camera::send_shader_uniforms(Shader& shader) {
 	shader.set("projection", projection);
 	shader.set("view", view);
 	shader.set("view_pos", position);
-	shader.unbind();
 }
 
 void gal::renderer_opengl::Camera::set_size(float width, float height) {

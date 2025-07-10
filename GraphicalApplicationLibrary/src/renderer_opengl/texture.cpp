@@ -1,4 +1,6 @@
 #include <renderer_opengl/texture.hpp>
+#include <SDL.h>
+#include <stdexcept>
 
 gal::renderer_opengl::Texture::Texture(uint16_t size_x_, uint16_t size_y_, GLenum internal_format, GLenum format, GLenum type, GLenum tex_unit, GLenum tex_target) {
 	size.x = size_x_;
@@ -33,7 +35,11 @@ gal::renderer_opengl::Texture::Texture(uint16_t size_x_, uint16_t size_y_, GLenu
 		glBindImageTexture(0, handle, 0, GL_FALSE, 0, GL_WRITE_ONLY, internal_format);
 	}
 
-	glActiveTexture(0);
+GLenum err = glGetError();
+if (err != GL_NO_ERROR) {
+    SDL_Log("OpenGL error during terrain generator init: %d", err);
+	throw std::runtime_error("OpenGL error during draw");
+}
 }
 
 gal::renderer_opengl::Texture::~Texture() {
@@ -56,13 +62,13 @@ void gal::renderer_opengl::Texture::update(uint16_t size_x_, uint16_t size_y_) {
 
 	bind();
 	glTexImage2D(target, 0, internal_format, size.x, size.y, 0, format, type, nullptr);
-	unbind();
+	// unbind();
 }
 
 void gal::renderer_opengl::Texture::update(void* pixels) {
 	bind();
 	glTexImage2D(target, 0, internal_format, size.x, size.y, 0, format, type, pixels);
-	unbind();
+	// unbind();
 }
 
 void gal::renderer_opengl::Texture::update(uint16_t size_x_, uint16_t size_y_, void* pixels) {
@@ -71,5 +77,5 @@ void gal::renderer_opengl::Texture::update(uint16_t size_x_, uint16_t size_y_, v
 
 	bind();
 	glTexImage2D(target, 0, internal_format, size.x, size.y, 0, format, type, pixels);
-	unbind();
+	// unbind();
 }

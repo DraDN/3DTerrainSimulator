@@ -1,12 +1,14 @@
 // #include <renderer_opengl/buffer.hpp>
 #pragma once
+#include <SDL.h>
+#include <stdexcept>
 
 template <typename T>
-gal::renderer_opengl::Buffer<T>::Buffer(GLint type, GLboolean dynamic) : type(type), dynamic(dynamic) {
+gal::renderer_opengl::Buffer<T>::Buffer(GLint type, GLboolean dynamic) : type(type), dynamic(dynamic), vao(std::nullopt) {
     glGenBuffers(1, &handle);
 
     if (type == GL_ARRAY_BUFFER) {
-        vao.value() = VAO();
+        vao.emplace();
     }
 }
 
@@ -17,14 +19,24 @@ gal::renderer_opengl::Buffer<T>::~Buffer() {
 
 template <typename T>
 void gal::renderer_opengl::Buffer<T>::bind() {
-    if (vao.has_value()) vao->bind();
     glBindBuffer(type, handle);
 }
 
 template <typename T>
+void gal::renderer_opengl::Buffer<T>::bind_vao() {
+    if (!vao.has_value()) return;
+    vao->bind();
+}
+
+template <typename T>
 void gal::renderer_opengl::Buffer<T>::unbind() {
-    if (vao.has_value()) vao->unbind();
     glBindBuffer(type, 0);
+}
+
+template <typename T>
+void gal::renderer_opengl::Buffer<T>::unbind_vao() {
+    if (!vao.has_value()) return;
+    vao->unbind();
 }
 
 template <typename T>
@@ -36,7 +48,7 @@ void gal::renderer_opengl::Buffer<T>::add_vertex_attributes(std::vector<VertexAt
 template <typename T>
 void gal::renderer_opengl::Buffer<T>::upload_data() {
     bind();
-    glBufferData(type, data.size(), data.data(), dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+    glBufferData(type, data.size() * sizeof(T), data.data(), dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
 }
 
 template <typename T>

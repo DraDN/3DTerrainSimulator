@@ -23,8 +23,6 @@ class gal::renderer_opengl::Light {
 
 		void send_shader_uniforms(Shader& shader);
 
-		// void set_projection_size(float size_x, float size_y);
-		// void calculate_matricies();
 		void rotate_around_point_by(glm::vec3 point, float angle);
 		void set_position(glm::vec3 new_pos);
 

@@ -1,22 +1,14 @@
-cmake_minimum_required(VERSION 3.20.0)
-project(NoiseLibrary VERSION 0.1.0 LANGUAGES C CXX)
-
-set(CMAKE_CXX_STANDARD 20)
-
-enable_testing()
-add_subdirectory(dependencies/FastNoise2)
 add_subdirectory(test)
 
-add_library(${PROJECT_NAME} STATIC src/noise_generator.cpp)
+add_library(NoiseLibrary STATIC src/noise_generator.cpp)
 
-set_target_properties(${PROJECT_NAME} PROPERTIES
-	VERSION ${PROJECT_VERSION}
-	SOVERSION ${PROJECT_VERSION_MAJOR}
-	PUBILC_HEADER include/noise_generator.hpp)
+target_compile_options(NoiseLibrary PRIVATE
+    $<$<CONFIG:Debug>:-g -O0>
+)
 
-target_include_directories(${PROJECT_NAME} PRIVATE src)
-target_include_directories(${PROJECT_NAME}
-	PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+target_include_directories(NoiseLibrary PRIVATE src)
+target_include_directories(NoiseLibrary
+	PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 	$<INSTALL_INTERFACE:include>)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC FastNoise)
+target_link_libraries(NoiseLibrary PUBLIC FastNoise)

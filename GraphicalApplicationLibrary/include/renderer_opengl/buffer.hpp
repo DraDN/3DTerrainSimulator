@@ -21,8 +21,9 @@ class gal::renderer_opengl::Buffer {
 		~Buffer();
 
 		void bind();
+		void bind_vao();
 		void unbind();
-		// void bind_data(void* data, size_t offset, size_t count);
+		void unbind_vao();
 		void add_vertex_attributes(std::vector<VertexAttribute>& vertex_attributes);
 		void upload_data();
 		void bind_base(GLuint base);

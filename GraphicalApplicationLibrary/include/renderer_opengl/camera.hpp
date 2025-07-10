@@ -1,7 +1,6 @@
 #pragma once
 
 #include <gal.hpp>
-// #include <texture.hpp>
 #include <glm_tools.hpp>
 
 #define NEAR 0.1f
@@ -15,7 +14,7 @@ class gal::renderer_opengl::Camera {
 
 		void set_size(float width, float height);
 
-		// void rotate(float angle, glm::vec3 axis);
+		// void rotate(float angle, glm::vec3 axis); TODO: maybe add this function idk
 		void rotate(float yaw, float pitch);
 		void rotate_by(float d_angle, glm::vec3 axis);
 		virtual void rotate_by(float d_yaw, float d_pitch);
