@@ -1,3 +1,6 @@
-[submodule "dependendcies/FastNoise2"]
-	path = dependendcies/FastNoise2
+[submodule "dependencies/spdlog"]
+	path = dependencies/spdlog
+	url = https://github.com/gabime/spdlog.git
+[submodule "dependencies/FastNoise2"]
+	path = dependencies/FastNoise2
 	url = https://github.com/Auburn/FastNoise2.git

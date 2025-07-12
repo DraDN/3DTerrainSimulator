@@ -2,7 +2,7 @@
 #include <vector>
 #include <iostream>
 // #include <immintrin.h>
-#include <aligned_allocator.hpp>
+#include <noiselib/aligned_allocator.hpp>
 
 int main() {
 	auto fnSimplex = FastNoise::New<FastNoise::Simplex>();

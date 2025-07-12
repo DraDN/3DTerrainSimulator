@@ -4,7 +4,8 @@
 #include <renderer_opengl/model.hpp>
 #include <renderer_opengl/texture.hpp>
 #include <renderer_opengl/shader.hpp>
-#include <noise_generator.hpp>
+#include <noiselib/noiselib.hpp>
+#include <noiselib/noise_generator.hpp>
 #include <material.hpp>
 
 #include <vector>
@@ -35,7 +36,7 @@ class TerrainGenerator {
 		void cancle_generation();
 
 		gal::renderer_opengl::Model model;
-		NoiseGenerator noise;
+		noiselib::NoiseGenerator noise;
 		gal::renderer_opengl::Texture normal_map;
 
 		gal::renderer_opengl::Buffer<Material> materials;
