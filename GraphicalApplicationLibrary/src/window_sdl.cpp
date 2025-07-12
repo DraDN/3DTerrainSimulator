@@ -1,4 +1,4 @@
-#include <window_sdl.hpp>
+#include "gal/window_sdl.hpp"
 
 gal::WindowSDL::WindowSDL(const char* title, glm::uvec2 size, uint32_t flags, WindowFunction init, WindowFunction destroy, WindowFunction update, WindowFunction render) :
 	size(size), initialize(init), destroy(destroy), update(update), render(render) {

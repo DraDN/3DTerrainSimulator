@@ -1,10 +1,10 @@
 #pragma once
 
-#include <gal.hpp>
-#include <glm_tools.hpp>
+#include "gal/gal.hpp"
+#include "gal/glm_tools.hpp"
 #include <GL/glew.h>
 
-#include <renderer_opengl/vertex_attribute.hpp>
+#include "gal/renderer_opengl/vertex_attribute.hpp"
 
 #include <string>
 #include <vector>

@@ -1,6 +1,6 @@
-#include <renderer_opengl/shader.hpp>
+#include "gal/renderer_opengl/shader.hpp"
 
-#include <renderer_opengl/vertex_attribute.hpp>
+#include "gal/renderer_opengl/vertex_attribute.hpp"
 
 #include <fstream>
 #include <sstream>

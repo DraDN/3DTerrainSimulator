@@ -1,4 +1,4 @@
-#include <graphics_app_sdl_opengl.hpp>
+#include "gal/graphics_app_sdl_opengl.hpp"
 
 void gal::GraphicsApp_SDL_OpenGL::_init_sdl() {
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {

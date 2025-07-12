@@ -1,10 +1,10 @@
 #pragma once
 
-#include <gal.hpp>
-#include <window_sdl.hpp>
-#include <renderer_opengl/renderer.hpp>
-#include <ui_imgui/implementation/ui_context_sdl.hpp>
-#include <glm_tools.hpp>
+#include "gal/gal.hpp"
+#include "gal/window_sdl.hpp"
+#include "gal/renderer_opengl/renderer.hpp"
+#include "gal/ui_imgui/implementation/ui_context_sdl.hpp"
+#include "gal/glm_tools.hpp"
 
 #include <optional>
 #include <memory>

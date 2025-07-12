@@ -1,9 +1,10 @@
 #pragma once
 
-#include <gal.hpp>
-#include <renderer_opengl/texture.hpp>
+#include "gal/gal.hpp"
+#include "gal/renderer_opengl/texture.hpp"
+
 #include <GL/glew.h>
-#include <glm_tools.hpp>
+#include "gal/glm_tools.hpp"
 
 class gal::renderer_opengl::RenderTarget {
 	public:

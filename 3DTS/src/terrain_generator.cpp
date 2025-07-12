@@ -1,4 +1,4 @@
-#include <terrain_generator.hpp>
+#include "terrain_generator.hpp"
 #include <SDL.h>
 #include <stdexcept>
 

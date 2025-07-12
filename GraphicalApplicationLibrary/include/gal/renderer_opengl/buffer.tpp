@@ -1,5 +1,5 @@
-// #include <renderer_opengl/buffer.hpp>
 #pragma once
+
 #include <SDL.h>
 #include <stdexcept>
 

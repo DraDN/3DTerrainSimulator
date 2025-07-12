@@ -1,4 +1,4 @@
-#include <renderer_opengl/texture.hpp>
+#include "gal/renderer_opengl/texture.hpp"
 #include <SDL.h>
 #include <stdexcept>
 

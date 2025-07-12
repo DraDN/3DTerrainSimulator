@@ -1,6 +1,6 @@
 #pragma once
 
-#include <gal.hpp>
+#include "gal/gal.hpp"
 #include <imgui.h>
 #include <SDL.h>
 

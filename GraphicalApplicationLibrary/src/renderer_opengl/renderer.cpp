@@ -1,6 +1,6 @@
-#include <renderer_opengl/renderer.hpp>
-#include <renderer_opengl/model.hpp>
-#include <renderer_opengl/light.hpp>
+#include "gal/renderer_opengl/renderer.hpp"
+#include "gal/renderer_opengl/model.hpp"
+#include "gal/renderer_opengl/light.hpp"
 
 void gal::renderer_opengl::RendererOpenGL::render(Model& model, Shader& shader, Camera& camera, std::optional<std::reference_wrapper<RenderTarget>> render_target, std::optional<std::reference_wrapper<Light>> light) {
 	camera.send_shader_uniforms(shader); // auto binds the shader

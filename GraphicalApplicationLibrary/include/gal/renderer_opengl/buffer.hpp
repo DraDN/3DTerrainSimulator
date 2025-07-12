@@ -1,8 +1,8 @@
 #pragma once
 
-#include <gal.hpp>
-#include <renderer_opengl/vao.hpp>
-#include <renderer_opengl/vertex_attribute.hpp>
+#include "gal/gal.hpp"
+#include "gal/renderer_opengl/vao.hpp"
+#include "gal/renderer_opengl/vertex_attribute.hpp"
 #include <optional>
 #include <vector>
 
@@ -30,4 +30,4 @@ class gal::renderer_opengl::Buffer {
 		void unbind_base(GLuint base);
 };
 
-#include <renderer_opengl/buffer.tpp>
+#include "gal/renderer_opengl/buffer.tpp"

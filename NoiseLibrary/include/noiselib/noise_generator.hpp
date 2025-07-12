@@ -3,7 +3,7 @@
 #include <vector>
 #include <FastNoise/FastNoise.h>
 
-#include <noiselib/noiselib.hpp>
+#include "noiselib/noiselib.hpp"
 
 class noiselib::NoiseGenerator {
 	public:

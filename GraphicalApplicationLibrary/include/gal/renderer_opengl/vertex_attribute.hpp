@@ -1,6 +1,6 @@
 #pragma once
 
-#include <gal.hpp>
+#include "gal/gal.hpp"
 #include <GL/glew.h>
 
 /*

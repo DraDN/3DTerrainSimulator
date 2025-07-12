@@ -1,6 +1,6 @@
 #pragma once
 
-#include <glm_tools.hpp>
+#include "gal/glm_tools.hpp"
 
 struct Material {
 	float height = 100.f;

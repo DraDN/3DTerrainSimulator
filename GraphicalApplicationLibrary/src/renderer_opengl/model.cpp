@@ -1,4 +1,4 @@
-#include <renderer_opengl/model.hpp>
+#include "gal/renderer_opengl/model.hpp"
 
 gal::renderer_opengl::Model::Model(GLenum render_mode, bool dynamic_buffers) : vertex_buffer(GL_ARRAY_BUFFER, dynamic_buffers), index_buffer(GL_ELEMENT_ARRAY_BUFFER, dynamic_buffers) {
 	transform_matrix = glm::mat4(1.f);

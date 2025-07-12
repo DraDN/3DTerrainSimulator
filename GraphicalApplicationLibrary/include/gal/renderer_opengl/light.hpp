@@ -1,9 +1,9 @@
 #pragma once
 
-#include <gal.hpp>
-#include <renderer_opengl/camera.hpp>
-#include <renderer_opengl/render_target.hpp>
-#include <glm_tools.hpp>
+#include "gal/gal.hpp"
+#include "gal/renderer_opengl/camera.hpp"
+#include "gal/renderer_opengl/render_target.hpp"
+#include "gal/glm_tools.hpp"
 
 class gal::renderer_opengl::Light {
 	public:

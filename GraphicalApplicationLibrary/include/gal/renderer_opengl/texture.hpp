@@ -1,8 +1,8 @@
 #pragma once
 
-#include <gal.hpp>
+#include "gal/gal.hpp"
 #include <GL/glew.h>
-#include <glm_tools.hpp>
+#include "gal/glm_tools.hpp"
 #include <vector>
 
 // typedef std::vector<std::pair<GLenum, GLenum>> ParamterList;

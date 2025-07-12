@@ -1,12 +1,12 @@
 #pragma once
 
-#include <gal.hpp>
-#include <renderer_opengl/model.hpp>
-#include <renderer_opengl/texture.hpp>
-#include <renderer_opengl/shader.hpp>
+#include "gal/gal.hpp"
+#include "gal/renderer_opengl/model.hpp"
+#include "gal/renderer_opengl/texture.hpp"
+#include "gal/renderer_opengl/shader.hpp"
 #include <noiselib/noiselib.hpp>
 #include <noiselib/noise_generator.hpp>
-#include <material.hpp>
+#include "material.hpp"
 
 #include <vector>
 #include <future>

@@ -1,5 +1,5 @@
-#include <renderer_opengl/light.hpp>
-#include <renderer_opengl/shader.hpp>
+#include "gal/renderer_opengl/light.hpp"
+#include "gal/renderer_opengl/shader.hpp"
 
 void gal::renderer_opengl::Light::send_shader_uniforms(Shader& shader) {
 	shader.bind();

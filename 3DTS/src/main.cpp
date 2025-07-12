@@ -1,5 +1,5 @@
-#include <graphics_app_sdl_opengl.hpp>
-#include <terrain_generator.hpp>
+#include "gal/graphics_app_sdl_opengl.hpp"
+#include "terrain_generator.hpp"
 #include <SDL.h>
 #include <stdexcept>
 

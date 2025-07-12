@@ -1,4 +1,4 @@
-#include <renderer_opengl/render_target.hpp>
+#include "gal/renderer_opengl/render_target.hpp"
 
 gal::renderer_opengl::RenderTarget::RenderTarget(GLenum attachment, glm::uvec2 size, GLenum texture_internal_format, GLenum texture_format, GLenum texture_type, GLenum tex_unit) : 
 		output(size.x, size.y, texture_internal_format, texture_format, texture_type, tex_unit, GL_TEXTURE_2D) {

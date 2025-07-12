@@ -1,10 +1,10 @@
 #pragma once
 
-#include <gal.hpp>
-#include <renderer_opengl/shader.hpp>
-#include <renderer_opengl/camera.hpp>
+#include "gal/gal.hpp"
+#include "gal/renderer_opengl/shader.hpp"
+#include "gal/renderer_opengl/camera.hpp"
 
-#include <glm_tools.hpp>
+#include "gal/glm_tools.hpp"
 #include <SDL.h>
 #include <optional>
 #include <functional>

@@ -1,9 +1,10 @@
 #pragma once
 
-#include <gal.hpp>
-#include <glm_tools.hpp>
-#include <renderer_opengl/buffer.hpp>
-#include <renderer_opengl/vertex_attribute.hpp>
+#include "gal/gal.hpp"
+#include "gal/glm_tools.hpp"
+#include "gal/renderer_opengl/buffer.hpp"
+#include "gal/renderer_opengl/vertex_attribute.hpp"
+
 #include <vector>
 #include <GL/glew.h>
 #include <functional>

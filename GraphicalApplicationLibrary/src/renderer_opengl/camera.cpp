@@ -1,5 +1,5 @@
-#include <renderer_opengl/camera.hpp>
-#include <renderer_opengl/shader.hpp>
+#include "gal/renderer_opengl/camera.hpp"
+#include "gal/renderer_opengl/shader.hpp"
 
 float gal::renderer_opengl::Camera::_angle_between(glm::vec3 a, glm::vec3 b, glm::vec3 origin, bool acos_or_asin) {
 	glm::vec3 da = glm::normalize(a-origin);

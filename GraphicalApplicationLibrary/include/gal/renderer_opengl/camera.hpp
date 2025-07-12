@@ -1,7 +1,7 @@
 #pragma once
 
-#include <gal.hpp>
-#include <glm_tools.hpp>
+#include "gal/gal.hpp"
+#include "gal/glm_tools.hpp"
 
 #define NEAR 0.1f
 #define FAR 5000.f

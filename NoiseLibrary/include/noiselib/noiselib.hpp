@@ -1,6 +1,6 @@
 #pragma once
 
-#include <noiselib/aligned_allocator.hpp>
+#include "noiselib/aligned_allocator.hpp"
 
 namespace noiselib {
 	class NoiseGenerator;

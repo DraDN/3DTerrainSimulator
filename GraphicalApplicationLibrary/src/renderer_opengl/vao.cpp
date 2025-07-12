@@ -1,4 +1,4 @@
-#include <renderer_opengl/vao.hpp>
+#include "gal/renderer_opengl/vao.hpp"
 
 gal::renderer_opengl::VAO::VAO() {
 	glGenVertexArrays(1, &handle);

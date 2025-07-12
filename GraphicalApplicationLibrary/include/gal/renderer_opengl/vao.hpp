@@ -1,7 +1,7 @@
 #pragma once
 
-#include <gal.hpp>
-#include <renderer_opengl/vertex_attribute.hpp>
+#include "gal/gal.hpp"
+#include "gal/renderer_opengl/vertex_attribute.hpp"
 
 #include <vector>
 
@@ -22,4 +22,4 @@ class gal::renderer_opengl::VAO {
 		int VERTEX_ELEMENT_NUMBER;
 };
 
-#include <renderer_opengl/vao.tpp>
+#include "gal/renderer_opengl/vao.tpp"
