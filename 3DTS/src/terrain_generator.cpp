@@ -22,13 +22,8 @@ TerrainGenerator::TerrainGenerator(glm::uvec2 size, GLenum available_texture_uni
 	};
 
 	model.unbind_callback = [&] {
-		materials.unbind_base(1);
+		// materials.unbind_base(1);
 	};
-GLenum err = glGetError();
-if (err != GL_NO_ERROR) {
-    SDL_Log("OpenGL error during terrain generator init: %d", err);
-	throw std::runtime_error("OpenGL error during draw");
-}
 
 	std::vector<gal::renderer_opengl::VertexAttribute> vert_atts = {
 		{ .index = 0,
@@ -48,8 +43,7 @@ if (err != GL_NO_ERROR) {
 
 	materials.data.emplace_back();
 
-	// construct_info.thread_num = std::thread::hardware_concurrency();
-	construct_info.thread_num = 1;
+	construct_info.thread_num = std::thread::hardware_concurrency();
 	construct_info.reset();
 }
 
@@ -110,9 +104,6 @@ void TerrainGenerator::cancle_generation() {
 void TerrainGenerator::launch_workers() {
 	std::vector<std::future<void>> builders;
 
-	// AlignedVector<float> noiseOutput(heights.data.size());
-	// noise.get_uniform_grid_2d(noiseOutput, model_size.x * normal_multiplication, model_size.y * normal_multiplication);
-	// std::copy(noiseOutput.begin(), noiseOutput.end(), heights.data.begin()); // move the data from the aligned becotr to the buffer (faster method)
 	noise.get_uniform_grid_2d(heights.data.data(), model_size.x * normal_multiplication, model_size.y * normal_multiplication);
 
 	float start_z = -(float)(model_size.y)/2.f;
@@ -125,6 +116,7 @@ void TerrainGenerator::launch_workers() {
 
 		SDL_Log("builder added");
 		builders.push_back(std::async(std::launch::async, &TerrainGenerator::builder, this, thr, model_size.x, model_size.y, start_z, length_z + evenly_divider, distance_between_vertecies, model.vertex_buffer.vao->VERTEX_ELEMENT_NUMBER, normal_multiplication));
+		start_z += length_z + evenly_divider;
 	}
 
 	for (auto& builder : builders) {
@@ -142,7 +134,7 @@ void TerrainGenerator::builder(int id, unsigned int size_x, unsigned int size_z,
 	unsigned int row = start.y + size_z / 2.f;
 	//              row where we at |  size of row |
 	unsigned int at_vertex     = row * (size_x + 1) * vertex_size;
-	unsigned int at_index      = row * (size_x - 1) * 6;
+	unsigned int at_index      = row * (size_x) * 6;
 	unsigned int current_index = row * (size_x + 1); 
 
 	SDL_Log("builder started!");
@@ -158,7 +150,6 @@ void TerrainGenerator::builder(int id, unsigned int size_x, unsigned int size_z,
 			try {
 				model.vertex_buffer.data.at(at_vertex)     = x * distance_between_vertecies;
 				model.vertex_buffer.data.at(at_vertex + 1) = heights.data[at_vertex/vertex_size * normal_mult];
-				model.vertex_buffer.data.at(at_vertex + 1) = 0.f;
 				model.vertex_buffer.data.at(at_vertex + 2) = z * distance_between_vertecies;
 
 				// vertex texture coordonates
@@ -167,8 +158,10 @@ void TerrainGenerator::builder(int id, unsigned int size_x, unsigned int size_z,
 
 				at_vertex += vertex_size;
 
-				// for edge vertecies we don't add triangles
-				if (x == end.x || z == end.y) continue;
+				// for *model* edge vertecies we don't add triangles
+				// size_z is the size of the model on the z and because it's centered, size_z /2.f would be the end of the model
+				if (x == end.x || (z == size_z / 2.f))
+					continue;
 
 				// triangle 1
 				model.index_buffer.data.at(at_index)     = current_index;
