@@ -9,7 +9,8 @@ class noiselib::NoiseGenerator {
 	public:
 		NoiseGenerator(float spacing = 0.1f, int seed = 1337);
 
-		void get_uniform_grid_2d(noiselib::AlignedVector<float>& outputv, float width, float height);
+		void get_uniform_grid_2d(noiselib::AlignedVector<float>& outputv, int width, int height);
+		void get_uniform_grid_2d(float* outputv, int width, int height);
 		float get_single_2d(float x, float y);
 
 		std::vector<FastNoise::SmartNode<>> nodes;

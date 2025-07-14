@@ -48,6 +48,7 @@ void update() {
 void render() {
 	app.renderer->clear_color = glm::vec4(0.5f, 0.f, 1.f, 1.f);
 	app.renderer->clear();
+	app.renderer->wireframe = true;
 	if (!terr_gen->construct_info.constructing)
 		app.renderer->render(terr_gen->model, std::ref(*shader), std::ref(main_camera));
 }

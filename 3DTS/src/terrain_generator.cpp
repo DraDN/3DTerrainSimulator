@@ -48,7 +48,8 @@ if (err != GL_NO_ERROR) {
 
 	materials.data.emplace_back();
 
-	construct_info.thread_num = std::thread::hardware_concurrency();
+	// construct_info.thread_num = std::thread::hardware_concurrency();
+	construct_info.thread_num = 1;
 	construct_info.reset();
 }
 
@@ -109,9 +110,10 @@ void TerrainGenerator::cancle_generation() {
 void TerrainGenerator::launch_workers() {
 	std::vector<std::future<void>> builders;
 
-	AlignedVector<float> noiseOutput(heights.data.size());
-	noise.get_uniform_grid_2d(noiseOutput, model_size.x * normal_multiplication, model_size.y * normal_multiplication);
-	std::copy(noiseOutput.begin(), noiseOutput.end(), heights.data.begin()); // move the data from the aligned becotr to the buffer (faster method)
+	// AlignedVector<float> noiseOutput(heights.data.size());
+	// noise.get_uniform_grid_2d(noiseOutput, model_size.x * normal_multiplication, model_size.y * normal_multiplication);
+	// std::copy(noiseOutput.begin(), noiseOutput.end(), heights.data.begin()); // move the data from the aligned becotr to the buffer (faster method)
+	noise.get_uniform_grid_2d(heights.data.data(), model_size.x * normal_multiplication, model_size.y * normal_multiplication);
 
 	float start_z = -(float)(model_size.y)/2.f;
 	unsigned int length_z = std::floor((model_size.y+1) / construct_info.thread_num);
