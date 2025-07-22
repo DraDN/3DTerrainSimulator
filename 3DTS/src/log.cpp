@@ -1,9 +1,10 @@
 #include "log.hpp"
-#include "noiselib/log.hpp"
-#include "gal/log.hpp"
 
 #ifdef TS_LOGGING
 std::shared_ptr<spdlog::logger> logger = nullptr;
+
+#include "noiselib/log.hpp"
+#include "gal/log.hpp"
 
 void init_logger() {
 	std::vector<spdlog::sink_ptr> app_log_sinks;

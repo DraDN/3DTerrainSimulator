@@ -57,3 +57,5 @@ target_compile_definitions(NoiseLibrary PUBLIC NOISELIB_LOGGING)
 
 add_subdirectory(3DTS)
 target_compile_definitions(3DTS PUBLIC TS_LOGGING)
+
+target_link_options(3DTS PRIVATE $<$<CONFIG:Debug>:-mconsole>)
