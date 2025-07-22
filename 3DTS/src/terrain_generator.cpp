@@ -1,4 +1,5 @@
 #include "terrain_generator.hpp"
+#include "log.hpp"
 #include <SDL.h>
 #include <stdexcept>
 
@@ -11,6 +12,7 @@ TerrainGenerator::TerrainGenerator(glm::uvec2 size, GLenum available_texture_uni
 
 	model.bind_callback = [&] {
 		if (construct_info.ready_to_upload) {
+			GAL_LOG_INFO("Uploading terrain data...");
 			model.upload_data();
 			calculate_normals();
 			construct_info.ready_to_upload = false;
@@ -45,6 +47,8 @@ TerrainGenerator::TerrainGenerator(glm::uvec2 size, GLenum available_texture_uni
 
 	construct_info.thread_num = std::thread::hardware_concurrency();
 	construct_info.reset();
+
+	APP_LOG_INFO("Terrain Generator created...");
 }
 
 void TerrainGenerator::generate_test_triangle() {
@@ -82,7 +86,7 @@ void TerrainGenerator::generate() {
 
 	model.vertex_buffer.data.resize(size_vertex_buffer);
 	model.index_buffer.data.resize(size_index_buffer);
-	SDL_Log("model vertex buffer size - %d", size_vertex_buffer);
+	APP_LOG_INFO("Cleared and resized buffers - model vertex buffer size: {}...", size_vertex_buffer);
 
 	glm::uvec2 normals_size = model_size;
 	normals_size.x *= normal_multiplication;
@@ -91,14 +95,17 @@ void TerrainGenerator::generate() {
 
 	normal_map.update(normals_size.x, normals_size.y);
 	heights.data.resize(normals_size.x * normals_size.y);
+	APP_LOG_INFO("Updated normal map and height buffer...");
 
 	construct_info.constructing = true;
 
+	GAL_LOG_INFO("Launching worker threads...");
 	workers = std::move(std::async(std::launch::async, &TerrainGenerator::launch_workers, this));
 }
 
 void TerrainGenerator::cancle_generation() {
 	construct_info.cancel_generation = true;
+	GAL_LOG_INFO("Canceling terrain generation...");
 }
 
 void TerrainGenerator::launch_workers() {
@@ -114,7 +121,7 @@ void TerrainGenerator::launch_workers() {
 		// integer that allocates one more row or not in order to divide uneven numbers across threads
 		evenly_divider = (thr < (model_size.y + 1) % construct_info.thread_num);
 
-		SDL_Log("builder added");
+		GAL_LOG_INFO("Builder added...");
 		builders.push_back(std::async(std::launch::async, &TerrainGenerator::builder, this, thr, model_size.x, model_size.y, start_z, length_z + evenly_divider, distance_between_vertecies, model.vertex_buffer.vao->VERTEX_ELEMENT_NUMBER, normal_multiplication));
 		start_z += length_z + evenly_divider;
 	}
@@ -125,6 +132,7 @@ void TerrainGenerator::launch_workers() {
 
 	construct_info.reset();
 	construct_info.ready_to_upload = true;
+	GAL_LOG_INFO("Workers finished...");
 }
 
 void TerrainGenerator::builder(int id, unsigned int size_x, unsigned int size_z, float start_z, float work_chunk_size, float distance_between_vertecies, float vertex_size, float normal_mult) {
@@ -137,12 +145,12 @@ void TerrainGenerator::builder(int id, unsigned int size_x, unsigned int size_z,
 	unsigned int at_index      = row * (size_x) * 6;
 	unsigned int current_index = row * (size_x + 1); 
 
-	SDL_Log("builder started!");
+	GAL_LOG_INFO("Builder {} started...", id);
 
 	for (float z = start.y; z <= end.y; z += 1.f) {
 		for (float x = start.x; x <= end.x; x += 1.f) {
 			if (construct_info.cancel_generation) {
-				SDL_Log("construction canceled!!");
+				GAL_LOG_INFO("Thread {} canceling construction...", id);
 				return;
 			}
 			
@@ -176,7 +184,7 @@ void TerrainGenerator::builder(int id, unsigned int size_x, unsigned int size_z,
 				current_index ++;
 				at_index += 6;
 			} catch (std::out_of_range& e) {
-				SDL_Log("something went wrong when asigning data! %s", e.what());
+				GAL_LOG_INFO("Something went wrong when asigning data! - {}", e.what());
 			}
 				
 			construct_info.progress.fetch_add(1);
@@ -188,6 +196,7 @@ void TerrainGenerator::builder(int id, unsigned int size_x, unsigned int size_z,
 }
 
 void TerrainGenerator::calculate_normals() {
+	GAL_LOG_INFO("Starting normals generator...");
 	normal_map_gen_shader->bind();
 	normal_map.bind();
 
@@ -196,7 +205,9 @@ void TerrainGenerator::calculate_normals() {
 
 	heights.upload_data();
 	heights.bind_base(HEIGHTS_BUFFER_SHADER_BINDING_BASE);
+	GAL_LOG_INFO("Uploaded heights data...");
 
+	GAL_LOG_INFO("Dispatching compute shader...");
 	normal_map_gen_shader->dispatch_compute((model_size.x +1) * normal_multiplication, 1, (model_size.y +1) * normal_multiplication);
 
 	normal_map_gen_shader->unbind();

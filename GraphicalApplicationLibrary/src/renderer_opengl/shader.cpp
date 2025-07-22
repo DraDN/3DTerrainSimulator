@@ -26,7 +26,7 @@ static GLint _compile_shader(std::string path, GLenum type) {
 
 		shader_code_cpy = string_stream.str();
 	} catch(std::ifstream::failure e) {
-		SDL_Log("COULDNT READ SHADER FILE - %s", path.c_str());
+		GAL_LOG_CRITICAL("COULD'T READ SHADER FILE - {}", path.c_str());
 		exit(1);
 	}
 
@@ -41,7 +41,7 @@ static GLint _compile_shader(std::string path, GLenum type) {
 	if (!success) {
 		char buf[512];
 		glGetShaderInfoLog(shader_handler, 512, NULL, buf);
-		SDL_Log("Shader not successfully built! - %s", path.c_str());
+		GAL_LOG_CRITICAL("Shader not successfully built! - {}", buf);
 		exit(1);
 	}
 
@@ -67,7 +67,7 @@ gal::renderer_opengl::Shader::Shader(std::string vs_path, std::string fs_path, s
 	if (!linked) {
 		char buf[512];
 		glGetProgramInfoLog(handle, 512, NULL, buf);
-		SDL_Log("NOT LINKED!!!");
+		GAL_LOG_CRITICAL("Shader not linked! - {}", buf);
 		exit(1);
 	}
 
@@ -97,7 +97,7 @@ gal::renderer_opengl::Shader::Shader(std::vector<ShaderInfo> shader_information,
 	if (!linked) {
 		char buf[512];
 		glGetProgramInfoLog(handle, 512, NULL, buf);
-		SDL_Log("NOT LINKED!!!");
+		GAL_LOG_CRITICAL("Shader not linked! - {}", buf);
 		exit(1);
 	}
 	// TODO: add debuging logs
@@ -125,6 +125,7 @@ void gal::renderer_opengl::Shader::unbind() {
 void gal::renderer_opengl::Shader::dispatch_compute(uint16_t comp_size_x, uint16_t comp_size_y, uint16_t comp_size_z) {
 	if (!is_compute) return;
 	// TODO: add error messages
+	GAL_LOG_WARN("Shader isn't a compute shader!");
 
 	glDispatchCompute(comp_size_x, comp_size_y, comp_size_z);
 	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);

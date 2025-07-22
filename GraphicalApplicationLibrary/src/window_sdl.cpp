@@ -11,13 +11,14 @@ gal::WindowSDL::WindowSDL(const char* title, glm::uvec2 size, uint32_t flags, Wi
 							  flags);
 	
 	if (handle == nullptr) {
+		GAL_LOG_CRITICAL("Cound't create SDL window handle!");
 		exit(1);
 	}
 }
 
 void gal::WindowSDL::loop() {
 	initialize();
-	SDL_Log("window initialized");
+	GAL_LOG_INFO("Window initialized...");
 
 	running = true;
 	while (running) {
@@ -27,10 +28,11 @@ void gal::WindowSDL::loop() {
 }
 
 void gal::WindowSDL::_render() {
-	if (render == nullptr)
-		SDL_Log("render not set!");
-	else
+	if (render == nullptr) {
+		GAL_LOG_WARN("Render function not set!");
+	} else {
 		render();
+	}
 
 	if (opengl_context.has_value()) {
 		SDL_GL_SwapWindow(handle);
@@ -42,6 +44,7 @@ gal::WindowSDL::~WindowSDL() {
 	if (opengl_context.has_value())
 		SDL_GL_DeleteContext(opengl_context.value());
 	SDL_DestroyWindow(handle);
+	GAL_LOG_INFO("SDL Window destroyed...");
 }
 
 void gal::WindowSDL::resize(float width, float height) {

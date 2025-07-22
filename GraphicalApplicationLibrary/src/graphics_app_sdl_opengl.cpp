@@ -66,6 +66,7 @@ void gal::GraphicsApp_SDL_OpenGL::init(const char* title, glm::uvec2 size, bool 
 
 gal::GraphicsApp_SDL_OpenGL::~GraphicsApp_SDL_OpenGL() {
 	SDL_Quit();
+	GAL_LOG_INFO("SDL quitted...");
 }
 
 void gal::GraphicsApp_SDL_OpenGL::set_functions(WindowFunction init, WindowFunction update, WindowFunction render, WindowFunction destroy, UIFunction ui_render) {
@@ -75,6 +76,8 @@ void gal::GraphicsApp_SDL_OpenGL::set_functions(WindowFunction init, WindowFunct
 	window->destroy = destroy;
 	if (ui.has_value() && ui_render)
 		ui.value().render_function = ui_render;
+	
+	GAL_LOG_INFO("Window functions set...");
 }
 
 bool gal::GraphicsApp_SDL_OpenGL::poll_event(Event_SDL_OpenGL& ev) {
@@ -95,6 +98,7 @@ void gal::GraphicsApp_SDL_OpenGL::launch() {
 		_render_intercept();
 	};
 
+	GAL_LOG_INFO("Launching application...");
 	window->loop();
 }
 
@@ -102,4 +106,6 @@ void gal::GraphicsApp_SDL_OpenGL::resize(float width, float height) {
 	window->resize(width, height);
 	renderer->window_size.x = width;
 	renderer->window_size.y = height;
+
+	GAL_LOG_INFO("Window resized...");
 }

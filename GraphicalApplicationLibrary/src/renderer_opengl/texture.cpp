@@ -34,12 +34,6 @@ gal::renderer_opengl::Texture::Texture(uint16_t size_x_, uint16_t size_y_, GLenu
 		glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glBindImageTexture(0, handle, 0, GL_FALSE, 0, GL_WRITE_ONLY, internal_format);
 	}
-
-GLenum err = glGetError();
-if (err != GL_NO_ERROR) {
-    SDL_Log("OpenGL error during terrain generator init: %d", err);
-	throw std::runtime_error("OpenGL error during draw");
-}
 }
 
 gal::renderer_opengl::Texture::~Texture() {
