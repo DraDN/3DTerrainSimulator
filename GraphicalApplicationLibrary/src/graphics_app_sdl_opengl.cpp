@@ -4,11 +4,15 @@ void gal::GraphicsApp_SDL_OpenGL::_init_sdl() {
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
 		exit(1);
 	}
+
+	GAL_LOG_INFO("SDL Initialized");
 }
 
 void gal::GraphicsApp_SDL_OpenGL::_init_glew() {
 	glewExperimental = true;
 	glewInit();
+
+	GAL_LOG_INFO("GLEW Initialized");
 }
 
 void gal::GraphicsApp_SDL_OpenGL::_prepare_opengl() {
@@ -26,6 +30,7 @@ void gal::GraphicsApp_SDL_OpenGL::_init_opengl() {
 	window->opengl_context.emplace(SDL_GL_CreateContext(window->handle));
 
 	if (window->opengl_context.value() == nullptr) {
+		GAL_LOG_CRITICAL("Couldn't create OpenGL context!");
 		exit(1);
 	}
 
@@ -39,9 +44,11 @@ void gal::GraphicsApp_SDL_OpenGL::_init_opengl() {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glViewport(0, 0, window->size.x, window->size.y);
+
+	GAL_LOG_INFO("OpenGL Initialized");
 }
 
-gal::GraphicsApp_SDL_OpenGL::GraphicsApp_SDL_OpenGL(const char* title, glm::uvec2 size, bool has_ui, uint32_t flags) {
+void gal::GraphicsApp_SDL_OpenGL::init(const char* title, glm::uvec2 size, bool has_ui, uint32_t flags) {
 	_init_sdl();
 	_prepare_opengl();
 
@@ -53,6 +60,8 @@ gal::GraphicsApp_SDL_OpenGL::GraphicsApp_SDL_OpenGL(const char* title, glm::uvec
 
 	if (has_ui)
 		ui.emplace(*window->handle, window->opengl_context.value());
+	
+	GAL_LOG_INFO("Graphics App created");
 }
 
 gal::GraphicsApp_SDL_OpenGL::~GraphicsApp_SDL_OpenGL() {

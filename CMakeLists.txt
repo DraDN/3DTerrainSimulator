@@ -34,6 +34,7 @@ project(3DTS VERSION 0.1.0)
 # target_link_libraries(3DTS PRIVATE GraphicalApplicationLibrary NoiseLibrary Threads::Threads)
 # target_link_libraries(3DTS PRIVATE Threads::Threads)
 add_subdirectory(dependencies/FastNoise2)
+add_subdirectory(dependencies/spdlog)
 
 # target_include_directories(3DTS PRIVATE 3DTS/include NoiseLibrary/include GraphicalApplicationLibrary/include dependencies/glm/ dependencies/imgui ${OPENGL_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS} ${SDL2_INCLUDE_DIRS})
 # target_link_libraries(3DTS PRIVATE ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${SDL2_LIBRARIES} FastNoise)
@@ -51,4 +52,8 @@ add_subdirectory(dependencies/imgui)
 add_subdirectory(GraphicalApplicationLibrary)
 add_subdirectory(NoiseLibrary)
 
+target_compile_definitions(GraphicalApplicationLibrary PUBLIC GAL_LOGGING)
+target_compile_definitions(NoiseLibrary PUBLIC NOISELIB_LOGGING)
+
 add_subdirectory(3DTS)
+target_compile_definitions(3DTS PUBLIC TS_LOGGING)

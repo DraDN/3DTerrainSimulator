@@ -11,6 +11,7 @@ add_library(GraphicalApplicationLibrary STATIC
     src/ui_imgui/implementation/sdl/ui_context_sdl.cpp
     src/window_sdl.cpp
     src/graphics_app_sdl_opengl.cpp
+    src/log.cpp
 )
 
 target_include_directories(GraphicalApplicationLibrary
@@ -37,4 +38,5 @@ target_link_libraries(GraphicalApplicationLibrary
         SDL2::Main
 		glm
         imgui
+        spdlog::spdlog
 )

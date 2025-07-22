@@ -2,11 +2,12 @@ find_package(Threads REQUIRED)
 
 add_executable(3DTS src/main.cpp
 					src/terrain_generator.cpp
+					src/log.cpp
 )
 			
 target_compile_features(3DTS PUBLIC cxx_std_20)
 
-target_link_libraries(3DTS PRIVATE GraphicalApplicationLibrary NoiseLibrary Threads::Threads)
+target_link_libraries(3DTS PRIVATE GraphicalApplicationLibrary NoiseLibrary Threads::Threads spdlog::spdlog)
 
 target_include_directories(3DTS PRIVATE include)
 

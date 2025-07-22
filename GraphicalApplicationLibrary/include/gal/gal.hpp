@@ -38,3 +38,5 @@ namespace gal {
 		};
 	};
 };
+
+#include "gal/log.hpp"

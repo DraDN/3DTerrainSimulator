@@ -1,10 +1,14 @@
 #include "gal/graphics_app_sdl_opengl.hpp"
+#include "noiselib/log.hpp"
 #include "terrain_generator.hpp"
+
 #include <SDL.h>
 #include <stdexcept>
 
+#include "log.hpp"
+
 glm::uvec2 size(640, 480);
-gal::GraphicsApp_SDL_OpenGL app("3DTS", size);
+gal::GraphicsApp_SDL_OpenGL app;
 std::unique_ptr<TerrainGenerator> terr_gen;
 std::unique_ptr<gal::renderer_opengl::Shader> shader;
 gal::renderer_opengl::Camera main_camera(size, glm::vec3(80.f), glm::vec3(0.f), 45.f);
@@ -30,6 +34,7 @@ void init() {
 	};
 
 	shader = std::make_unique<gal::renderer_opengl::Shader>(shader_infos, attribute_infos);
+	APP_LOG_INFO("init() window function finished succesfully");
 }
 
 void update() {
@@ -54,10 +59,14 @@ void render() {
 }
 
 void destroy() {
+	APP_LOG_INFO("Destroying app!");
 	return;
 }
 
 int main(int argc, char* argv[]) {
+	init_logger();
+
+	app.init("3DTS", size);
 	app.set_functions(init, update, render, destroy);
 	app.launch();
 

@@ -18,7 +18,7 @@ class gal::GraphicsApp_SDL_OpenGL {
 	public:
 		// GraphicsApp_SDL_OpenGL(const char* title, glm::uvec2 size, WindowFunction init, WindowFunction update, WindowFunction render, WindowFunction destroy, UIFunction ui_render);
 		// GraphicsApp_SDL_OpenGL(const char* title, glm::uvec2 size, WindowFunction init, WindowFunction update, WindowFunction render, WindowFunction destroy);
-		GraphicsApp_SDL_OpenGL(const char* title, glm::uvec2 size, bool has_ui = false, uint32_t flags = 0);
+		void init(const char* title, glm::uvec2 size, bool has_ui = false, uint32_t flags = 0);
 		~GraphicsApp_SDL_OpenGL();
 
 		void set_functions(WindowFunction init, WindowFunction update, WindowFunction render, WindowFunction destroy, UIFunction ui_render = nullptr);

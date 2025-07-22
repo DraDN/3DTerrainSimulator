@@ -1,6 +1,7 @@
 #pragma once
 
 #include "noiselib/aligned_allocator.hpp"
+#include "noiselib/log.hpp"
 
 namespace noiselib {
 	class NoiseGenerator;
