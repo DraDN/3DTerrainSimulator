@@ -19,6 +19,9 @@ void gal::init_logger(std::vector<spdlog::sink_ptr> external_sinks) {
 }
 
 void glDebugOutput(GLenum source, GLenum type, unsigned int id, GLenum severity, GLsizei length, const char* message, const void *userParam) {
+	// ignore non-significant error/warning codes
+    if(id == 131169 || id == 131185 || id == 131218 || id == 131204) return; 
+
 	std::string s_source, s_type;
 
 	switch (source) {

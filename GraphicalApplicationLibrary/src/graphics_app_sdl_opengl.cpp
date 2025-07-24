@@ -77,6 +77,9 @@ void gal::GraphicsApp_SDL_OpenGL::init(const char* title, glm::uvec2 size, bool 
 }
 
 gal::GraphicsApp_SDL_OpenGL::~GraphicsApp_SDL_OpenGL() {
+	window.reset();
+	renderer.reset();
+	ui.reset();
 	SDL_Quit();
 	GAL_LOG_INFO("SDL quitted...");
 }

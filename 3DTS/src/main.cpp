@@ -49,6 +49,10 @@ void update() {
 	main_camera.rotate_by(0.2f, glm::vec3(0.f, 1.f, 0.f));
 }
 
+void ui() {
+	ImGui::ShowDemoWindow();
+}
+
 void render() {
 	app.renderer->clear_color = glm::vec4(0.5f, 0.f, 1.f, 1.f);
 	app.renderer->clear();
@@ -65,8 +69,8 @@ void destroy() {
 int main(int argc, char* argv[]) {
 	init_logger();
 
-	app.init("3DTS", size);
-	app.set_functions(init, update, render, destroy);
+	app.init("3DTS", size, true);
+	app.set_functions(init, update, render, destroy, ui);
 	app.launch();
 
 	return 0;

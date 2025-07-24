@@ -13,11 +13,13 @@ gal::ui_imgui::implementation::sdl::UIContext::UIContext(SDL_Window& window, SDL
 	const char glsl_version[] = "#version 430";
 	ImGui_ImplSDL2_InitForOpenGL(window_handler, gl_context);
 	ImGui_ImplOpenGL3_Init(glsl_version);
+	GAL_LOG_INFO("UI Context initialized...");
 }
 
 gal::ui_imgui::implementation::sdl::UIContext::~UIContext() {
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplSDL2_Shutdown();
+	GAL_LOG_INFO("UI Context destroyed...");
 }
 
 void gal::ui_imgui::implementation::sdl::UIContext::process_events(SDL_Event &events) {
@@ -32,7 +34,7 @@ void gal::ui_imgui::implementation::sdl::UIContext::_new_frame() {
 
 void gal::ui_imgui::implementation::sdl::UIContext::render() {
 	_new_frame();
-	render();
+	render_function();
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
