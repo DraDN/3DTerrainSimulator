@@ -107,10 +107,10 @@ bool gal::GraphicsApp_SDL_OpenGL::poll_event(Event_SDL_OpenGL& ev) {
 void gal::GraphicsApp_SDL_OpenGL::launch() {
 	_render_intercept = window->render;
 	window->render = [this]() {
+		_render_intercept();
+		
 		if (ui.has_value()) 
 			ui.value().render();
-
-		_render_intercept();
 	};
 
 	GAL_LOG_INFO("Launching application...");
