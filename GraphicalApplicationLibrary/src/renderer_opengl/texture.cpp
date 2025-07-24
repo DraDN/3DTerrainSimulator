@@ -46,7 +46,6 @@ void gal::renderer_opengl::Texture::bind() {
 }
 
 void gal::renderer_opengl::Texture::unbind() {
-	glActiveTexture(0);
 	glBindTexture(target, 0);
 }
 

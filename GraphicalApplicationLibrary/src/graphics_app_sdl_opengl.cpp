@@ -2,6 +2,7 @@
 
 void gal::GraphicsApp_SDL_OpenGL::_init_sdl() {
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
+		GAL_LOG_CRITICAL("Couldn't intialize SDL!");
 		exit(1);
 	}
 
@@ -24,6 +25,10 @@ void gal::GraphicsApp_SDL_OpenGL::_prepare_opengl() {
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
 	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
+
+#ifdef GAL_LOGGING
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+#endif
 }
 
 void gal::GraphicsApp_SDL_OpenGL::_init_opengl() {
@@ -43,9 +48,16 @@ void gal::GraphicsApp_SDL_OpenGL::_init_opengl() {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+#ifdef GAL_LOGGING
+	glEnable(GL_DEBUG_OUTPUT);
+	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+	glDebugMessageCallback(glDebugOutput, nullptr);
+	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+#endif
+
 	glViewport(0, 0, window->size.x, window->size.y);
 
-	GAL_LOG_INFO("OpenGL Initialized");
+	GAL_LOG_INFO("OpenGL Initialized - Version: {}", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
 }
 
 void gal::GraphicsApp_SDL_OpenGL::init(const char* title, glm::uvec2 size, bool has_ui, uint32_t flags) {

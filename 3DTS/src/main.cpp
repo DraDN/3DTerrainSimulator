@@ -14,7 +14,6 @@ std::unique_ptr<gal::renderer_opengl::Shader> shader;
 gal::renderer_opengl::Camera main_camera(size, glm::vec3(80.f), glm::vec3(0.f), 45.f);
 
 void init() {
-	// SDL_Log("OpenGL version: %s", glGetString(GL_VERSION));
 	glm::ivec2 terr_size(100, 100);
 	terr_gen = std::make_unique<TerrainGenerator>(terr_size, GL_TEXTURE0);
 	terr_gen->generate();

@@ -14,6 +14,8 @@ gal::WindowSDL::WindowSDL(const char* title, glm::uvec2 size, uint32_t flags, Wi
 		GAL_LOG_CRITICAL("Cound't create SDL window handle!");
 		exit(1);
 	}
+	
+	GAL_LOG_INFO("Window \"{}\" created", title);
 }
 
 void gal::WindowSDL::loop() {

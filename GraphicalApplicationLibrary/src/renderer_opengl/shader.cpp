@@ -123,9 +123,10 @@ void gal::renderer_opengl::Shader::unbind() {
 }
 
 void gal::renderer_opengl::Shader::dispatch_compute(uint16_t comp_size_x, uint16_t comp_size_y, uint16_t comp_size_z) {
-	if (!is_compute) return;
-	// TODO: add error messages
-	GAL_LOG_WARN("Shader isn't a compute shader!");
+	if (!is_compute) {
+		GAL_LOG_WARN("Shader isn't a compute shader!");
+		return;
+	}
 
 	glDispatchCompute(comp_size_x, comp_size_y, comp_size_z);
 	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
