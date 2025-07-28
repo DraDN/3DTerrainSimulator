@@ -4,11 +4,16 @@
 
 gal::ui_imgui::implementation::sdl::UIContext::UIContext(SDL_Window& window, SDL_GLContext& gl_context, UIFunction render) {
 	window_handler = &window;
+	window_opengl_context = gl_context;
 	render_function = render;
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO &io = ImGui::GetIO(); (void)io;
+
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+	io.ConfigViewportsNoTaskBarIcon = true;
 
 	const char glsl_version[] = "#version 430";
 	ImGui_ImplSDL2_InitForOpenGL(window_handler, gl_context);
@@ -37,4 +42,11 @@ void gal::ui_imgui::implementation::sdl::UIContext::render() {
 	render_function();
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+	ImGuiIO &io = ImGui::GetIO();
+	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+		ImGui::UpdatePlatformWindows();
+		ImGui::RenderPlatformWindowsDefault();
+		SDL_GL_MakeCurrent(window_handler, window_opengl_context);
+	}
 }

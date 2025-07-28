@@ -11,11 +11,12 @@ TerrainGenerator::TerrainGenerator(glm::uvec2 size, GLenum available_texture_uni
 		heights(GL_SHADER_STORAGE_BUFFER, false), materials(GL_SHADER_STORAGE_BUFFER, false), model(GL_TRIANGLES) {
 
 	model.bind_callback = [&] {
-		if (construct_info.ready_to_upload) {
+		if (construct_info.ready_to_upload.load()) {
 			GAL_LOG_INFO("Uploading terrain data...");
 			model.upload_data();
 			calculate_normals();
-			construct_info.ready_to_upload = false;
+			// construct_info.ready_to_upload = false;
+			construct_info.ready_to_upload.store(false);
 		}
 		normal_map.bind();
 		// materials.upload_data();
@@ -45,7 +46,7 @@ TerrainGenerator::TerrainGenerator(glm::uvec2 size, GLenum available_texture_uni
 
 	materials.data.emplace_back();
 
-	construct_info.thread_num = std::thread::hardware_concurrency();
+	construct_info.thread_num = std::thread::hardware_concurrency() -1;
 	construct_info.reset();
 
 	APP_LOG_INFO("Terrain Generator created...");
@@ -97,29 +98,29 @@ void TerrainGenerator::generate() {
 	heights.data.resize(normals_size.x * normals_size.y);
 	APP_LOG_INFO("Updated normal map and height buffer...");
 
-	construct_info.constructing = true;
+	construct_info.constructing.store(true);
 
 	GAL_LOG_INFO("Launching worker threads...");
 	workers = std::move(std::async(std::launch::async, &TerrainGenerator::launch_workers, this));
 }
 
 void TerrainGenerator::cancle_generation() {
-	construct_info.cancel_generation = true;
+	construct_info.cancel_generation.store(true);
 	GAL_LOG_INFO("Canceling terrain generation...");
 }
 
 void TerrainGenerator::launch_workers() {
 	std::vector<std::future<void>> builders;
 
-	noise.get_uniform_grid_2d(heights.data.data(), model_size.x * normal_multiplication, model_size.y * normal_multiplication);
+	noise.get_uniform_grid_2d(heights.data.data(), (model_size.x) * normal_multiplication, (model_size.y) * normal_multiplication);
 
 	float start_z = -(float)(model_size.y)/2.f;
 	unsigned int length_z = std::floor((model_size.y+1) / construct_info.thread_num);
 	int evenly_divider;
 
-	for (uint8_t thr = 0; thr < construct_info.thread_num; thr++) {
+	for (uint8_t thr = 0; thr < construct_info.thread_num.load(); thr++) {
 		// integer that allocates one more row or not in order to divide uneven numbers across threads
-		evenly_divider = (thr < (model_size.y + 1) % construct_info.thread_num);
+		evenly_divider = (thr < (model_size.y + 1) % construct_info.thread_num.load());
 
 		GAL_LOG_INFO("Builder added...");
 		builders.push_back(std::async(std::launch::async, &TerrainGenerator::builder, this, thr, model_size.x, model_size.y, start_z, length_z + evenly_divider, distance_between_vertecies, model.vertex_buffer.vao->VERTEX_ELEMENT_NUMBER, normal_multiplication));
@@ -131,7 +132,7 @@ void TerrainGenerator::launch_workers() {
 	}
 
 	construct_info.reset();
-	construct_info.ready_to_upload = true;
+	construct_info.ready_to_upload.store(true);
 	GAL_LOG_INFO("Workers finished...");
 }
 
@@ -149,7 +150,7 @@ void TerrainGenerator::builder(int id, unsigned int size_x, unsigned int size_z,
 
 	for (float z = start.y; z <= end.y; z += 1.f) {
 		for (float x = start.x; x <= end.x; x += 1.f) {
-			if (construct_info.cancel_generation) {
+			if (construct_info.cancel_generation.load()) {
 				GAL_LOG_INFO("Thread {} canceling construction...", id);
 				return;
 			}
@@ -187,7 +188,9 @@ void TerrainGenerator::builder(int id, unsigned int size_x, unsigned int size_z,
 				GAL_LOG_INFO("Something went wrong when asigning data! - {}", e.what());
 			}
 				
-			construct_info.progress.fetch_add(1);
+			// construct_info.progress.fetch_add(1);
+			// // construct_info.progress.notify_all();
+			construct_info.progress++;
 		}
 		
 		// the current index before this increment is the last vertex on the previous line, so this acts as a 'new line increment'

@@ -13,16 +13,20 @@ class gal::renderer_opengl::Camera {
 		void send_shader_uniforms(Shader& shader);
 
 		void set_size(float width, float height);
+		glm::vec2 get_size();
 
 		// void rotate(float angle, glm::vec3 axis); TODO: maybe add this function idk
-		void rotate(float yaw, float pitch);
+		void set_rotation(float yaw, float pitch);
 		void rotate_by(float d_angle, glm::vec3 axis);
 		virtual void rotate_by(float d_yaw, float d_pitch);
 
 		void zoom(float zoom);
+		void set_fov(float new_fov);
+		float get_fov();
 
 		void set_position(glm::vec3 new_pos);
 		virtual void move_by(glm::vec3 d_pos);
+		glm::vec3 get_position();
 
 		glm::mat4 get_projection();
 		glm::mat4 get_view();
@@ -41,7 +45,7 @@ class gal::renderer_opengl::Camera {
 		float _angle_between(glm::vec3 a, glm::vec3 b, glm::vec3 origin, bool acos_or_asin);
 };
 
-class gal::renderer_opengl::ControllableCamera : Camera {
+class gal::renderer_opengl::ControllableCamera : public Camera {
 	public:
 		using Camera::Camera;
 

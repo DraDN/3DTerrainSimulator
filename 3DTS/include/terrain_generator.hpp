@@ -18,13 +18,11 @@ struct MeshConstructInfo {
 	std::atomic_bool cancel_generation;
 	std::atomic_uint progress;
 
-	std::vector<std::future<void>> futures;
 	std::atomic_uint8_t thread_num;
 
 	void reset() {
-		constructing = false;
-		progress = 0.f;
-		futures.clear();
+		constructing.store(false);
+		progress.store(0);
 	}
 };
 

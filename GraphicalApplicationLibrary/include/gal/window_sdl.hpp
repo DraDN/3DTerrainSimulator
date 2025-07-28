@@ -16,8 +16,9 @@ class gal::WindowSDL {
 
 		void loop();
 		void resize(float width, float height);
+		void set_mouse_grab(bool grab);
 
-		bool running, grab_mouse;
+		bool running;
 		glm::uvec2 size;
 
 		SDL_Window* handle;

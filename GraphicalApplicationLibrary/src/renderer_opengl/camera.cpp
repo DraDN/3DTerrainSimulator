@@ -18,7 +18,7 @@ void gal::renderer_opengl::Camera::_calculate_projection() {
 								glm::length(glm::vec2(position.x, position.z) - size.y/2.f*glm::root_two<float>()),
 								glm::length(glm::vec2(position.x, position.z) + size.y*glm::root_two<float>()));
 	} else {
-		projection = glm::perspective(fov, size.x/size.y, NEAR, FAR);
+		projection = glm::perspective(glm::radians(fov), size.x/size.y, NEAR, FAR);
 	}
 }
 
@@ -52,6 +52,10 @@ void gal::renderer_opengl::Camera::set_size(float width, float height) {
 	_calculate_projection();
 }
 
+glm::vec2 gal::renderer_opengl::Camera::get_size() {
+	return size;
+}
+
 void gal::renderer_opengl::Camera::rotate_by(float d_angle, glm::vec3 axis) {
 	d_angle = glm::radians(d_angle);
 	glm::mat4 rotation_matrix = glm::rotate(glm::mat4(1.f), d_angle, axis);
@@ -60,7 +64,7 @@ void gal::renderer_opengl::Camera::rotate_by(float d_angle, glm::vec3 axis) {
 	position = glm::vec3(rotation_matrix * glm::vec4(position, 1.f));
 }
 
-void gal::renderer_opengl::Camera::rotate(float yaw, float pitch) {
+void gal::renderer_opengl::Camera::set_rotation(float yaw, float pitch) {
 	pitch = (pitch >  89.f) ?  89.f : pitch;
 	pitch = (pitch < -89.f) ? -89.f : pitch;
 
@@ -77,7 +81,7 @@ void gal::renderer_opengl::Camera::rotate_by(float d_yaw, float d_pitch) {
 	yaw += d_yaw;
 	pitch += d_pitch;
 
-	rotate(yaw, pitch);
+	set_rotation(yaw, pitch);
 }
 
 void gal::renderer_opengl::Camera::zoom(float zoom) {
@@ -91,17 +95,31 @@ void gal::renderer_opengl::Camera::zoom(float zoom) {
 	projection = glm::perspective(glm::radians(fov), size.x/size.y, NEAR, FAR);
 }
 
+void gal::renderer_opengl::Camera::set_fov(float new_fov) {
+	if (is_ortho) return;
+
+	fov = new_fov;
+
+	projection = glm::perspective(glm::radians(fov), size.x/size.y, NEAR, FAR);
+}
+
+float gal::renderer_opengl::Camera::get_fov() {
+	return fov;
+}
+
 void gal::renderer_opengl::Camera::set_position(glm::vec3 new_pos) {
 	position = new_pos;
 	view = glm::lookAt(position, position+front, up);
 }
 
 void gal::renderer_opengl::Camera::move_by(glm::vec3 d_pos) {
-	position += d_pos.z * front;
-	position += d_pos.x * glm::normalize(glm::cross(front, up));
-	position += d_pos.y * up;
+	position += d_pos;
 
 	view = glm::lookAt(position, position+front, up);
+}
+
+glm::vec3 gal::renderer_opengl::Camera::get_position() {
+	return position;
 }
 
 glm::mat4 gal::renderer_opengl::Camera::get_projection() {
@@ -116,7 +134,7 @@ void gal::renderer_opengl::ControllableCamera::rotate_by(float d_yaw, float d_pi
 	yaw += d_yaw * look_sensitivity;
 	pitch += d_pitch * look_sensitivity;
 
-	rotate(yaw, pitch);
+	set_rotation(yaw, pitch);
 }
 
 void gal::renderer_opengl::ControllableCamera::move_by(glm::vec3 d_pos) {

@@ -16,5 +16,6 @@ class gal::renderer_opengl::RenderTarget {
 		static void bind_window_target(glm::uvec2 size);
 
 		GLuint handle;
+		GLenum attachment;
 		Texture output;
 };

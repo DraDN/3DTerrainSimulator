@@ -21,4 +21,5 @@ class gal::ui_imgui::implementation::sdl::UIContext {
 		void _new_frame();
 
 		SDL_Window* window_handler;
+		SDL_GLContext window_opengl_context;
 };

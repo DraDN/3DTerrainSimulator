@@ -23,8 +23,8 @@ void gal::GraphicsApp_SDL_OpenGL::_prepare_opengl() {
 
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
+	// SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+	// SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
 
 #ifdef GAL_LOGGING
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
@@ -43,10 +43,11 @@ void gal::GraphicsApp_SDL_OpenGL::_init_opengl() {
 
 	_init_glew();
 
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	// glEnable(GL_DEPTH_TEST);
+	// glDepthFunc(GL_LESS);
+	// glEnable(GL_BLEND);
+	// glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	// glEnable(GL_MULTISAMPLE);
 
 #ifdef GAL_LOGGING
 	glEnable(GL_DEBUG_OUTPUT);
@@ -97,7 +98,7 @@ void gal::GraphicsApp_SDL_OpenGL::set_functions(WindowFunction init, WindowFunct
 
 bool gal::GraphicsApp_SDL_OpenGL::poll_event(Event_SDL_OpenGL& ev) {
 	bool is_event = SDL_PollEvent(&ev.event);
-	if (ui.has_value()) {
+	if (ui.has_value() && is_event) {
 		ui->process_events(ev.event);
 		ev.IO = &ImGui::GetIO();
 	}

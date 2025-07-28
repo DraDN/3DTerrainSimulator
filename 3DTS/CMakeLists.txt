@@ -3,6 +3,7 @@ find_package(Threads REQUIRED)
 add_executable(3DTS src/main.cpp
 					src/terrain_generator.cpp
 					src/log.cpp
+					src/ui.cpp
 )
 			
 target_compile_features(3DTS PUBLIC cxx_std_20)

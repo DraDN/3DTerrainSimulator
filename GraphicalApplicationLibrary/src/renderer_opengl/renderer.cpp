@@ -26,7 +26,10 @@ void gal::renderer_opengl::RendererOpenGL::render(Model& model, Shader& shader, 
 	shader.unbind();
 }
 
-void gal::renderer_opengl::RendererOpenGL::clear() {
+void gal::renderer_opengl::RendererOpenGL::clear(std::optional<std::reference_wrapper<RenderTarget>> render_target) {
+	if (render_target.has_value())
+		render_target->get().bind();
+
 	glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }

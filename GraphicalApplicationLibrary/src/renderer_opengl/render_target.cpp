@@ -1,7 +1,7 @@
 #include "gal/renderer_opengl/render_target.hpp"
 
 gal::renderer_opengl::RenderTarget::RenderTarget(GLenum attachment, glm::uvec2 size, GLenum texture_internal_format, GLenum texture_format, GLenum texture_type, GLenum tex_unit) : 
-		output(size.x, size.y, texture_internal_format, texture_format, texture_type, tex_unit, GL_TEXTURE_2D) {
+		output(size.x, size.y, texture_internal_format, texture_format, texture_type, tex_unit, GL_TEXTURE_2D), attachment(attachment) {
 	output.bind();
 	glGenFramebuffers(1, &handle);
 	glBindFramebuffer(GL_FRAMEBUFFER, handle);
@@ -21,11 +21,11 @@ gal::renderer_opengl::RenderTarget::~RenderTarget() {
 }
 
 void gal::renderer_opengl::RenderTarget::bind() {
-	glViewport(0, 0, output.size.x, output.size.y);
 	glBindFramebuffer(GL_FRAMEBUFFER, handle);
+	glViewport(0, 0, output.size.x, output.size.y);
 }
 
 void gal::renderer_opengl::RenderTarget::bind_window_target(glm::uvec2 size) {
-	glViewport(0, 0, size.x, size.y);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport(0, 0, size.x, size.y);
 }
