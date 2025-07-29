@@ -12,6 +12,7 @@ TerrainGenerator::TerrainGenerator(glm::uvec2 size, GLenum available_texture_uni
 
 	model.bind_callback = [&] {
 		if (construct_info.ready_to_upload.load()) {
+			workers.join();
 			GAL_LOG_INFO("Uploading terrain data...");
 			model.upload_data();
 			calculate_normals();
@@ -46,10 +47,16 @@ TerrainGenerator::TerrainGenerator(glm::uvec2 size, GLenum available_texture_uni
 
 	materials.data.emplace_back();
 
-	construct_info.thread_num = std::thread::hardware_concurrency() -1;
+	construct_info.thread_num = std::max(std::thread::hardware_concurrency() -2, 1u);
 	construct_info.reset();
 
 	APP_LOG_INFO("Terrain Generator created...");
+}
+
+TerrainGenerator::~TerrainGenerator() {
+	if (workers.joinable()) {
+		workers.join();
+	}
 }
 
 void TerrainGenerator::generate_test_triangle() {
@@ -101,7 +108,7 @@ void TerrainGenerator::generate() {
 	construct_info.constructing.store(true);
 
 	GAL_LOG_INFO("Launching worker threads...");
-	workers = std::move(std::async(std::launch::async, &TerrainGenerator::launch_workers, this));
+	workers = std::thread(&TerrainGenerator::launch_workers, this);
 }
 
 void TerrainGenerator::cancle_generation() {
@@ -110,7 +117,7 @@ void TerrainGenerator::cancle_generation() {
 }
 
 void TerrainGenerator::launch_workers() {
-	std::vector<std::future<void>> builders;
+	std::vector<std::thread> builders;
 
 	float axis_scale = 1.f / (float)normal_multiplication;
 	noise.get_uniform_grid_2d_scaled(heights.data.data(), (model_size.x +1) * normal_multiplication, (model_size.y +1) * normal_multiplication, axis_scale, axis_scale);
@@ -124,12 +131,12 @@ void TerrainGenerator::launch_workers() {
 		evenly_divider = (thr < (model_size.y + 1) % construct_info.thread_num.load());
 
 		GAL_LOG_INFO("Builder added...");
-		builders.push_back(std::async(std::launch::async, &TerrainGenerator::builder, this, thr, model_size.x, model_size.y, start_z, length_z + evenly_divider, distance_between_vertecies, model.vertex_buffer.vao->VERTEX_ELEMENT_NUMBER, normal_multiplication));
+		builders.emplace_back(&TerrainGenerator::builder, this, thr, model_size.x, model_size.y, start_z, length_z + evenly_divider, distance_between_vertecies, model.vertex_buffer.vao->VERTEX_ELEMENT_NUMBER, normal_multiplication);
 		start_z += length_z + evenly_divider;
 	}
 
 	for (auto& builder : builders) {
-		builder.wait();
+		builder.join();
 	}
 
 	construct_info.reset();
@@ -137,7 +144,7 @@ void TerrainGenerator::launch_workers() {
 	GAL_LOG_INFO("Workers finished...");
 }
 
-void TerrainGenerator::builder(int id, unsigned int size_x, unsigned int size_z, float start_z, float work_chunk_size, float distance_between_vertecies, float vertex_size, float normal_mult) {
+void TerrainGenerator::builder(int id, unsigned int size_x, unsigned int size_z, float start_z, float work_chunk_size, float distance_between_vertecies, unsigned int vertex_size, float normal_mult) {
 	glm::vec2 start( -(float)(size_x) / 2.f, start_z);
 	glm::vec2 end( -start.x, start_z + work_chunk_size -1.f);
 
@@ -164,19 +171,20 @@ void TerrainGenerator::builder(int id, unsigned int size_x, unsigned int size_z,
 				float shifted_z = z + (size_z / 2.0f);
 
 				// Scale to high-res grid by normal_mult (integer scale factor)
-				int high_x = static_cast<int>(shifted_x * normal_mult);
-				int high_z = static_cast<int>(shifted_z * normal_mult);
+				size_t high_x = static_cast<size_t>(shifted_x * normal_mult);
+				size_t high_z = static_cast<size_t>(shifted_z * normal_mult);
 
 				// Compute 1D index in high-res height array
 				size_t at_heights = high_x + high_z * ((size_x +1) * normal_mult);
 
 				// size_t at_heights = ((x + size_x/2.f) + (z + size_z/2.f) * size_x) * normal_mult;
 				model.vertex_buffer.data.at(at_vertex + 1) = heights.data[at_heights];
+				// model.vertex_buffer.data.at(at_vertex + 1) = 1.f;
 				model.vertex_buffer.data.at(at_vertex + 2) = z * distance_between_vertecies;
 
 				// vertex texture coordonates
-				model.vertex_buffer.data.at(at_vertex + 3) = (x + size_x/2.f) / (size_x); // offset the position to start from 0 and then convert into 0 - 1 range
-				model.vertex_buffer.data.at(at_vertex + 4) = (z + size_z/2.f) / (size_z);
+				model.vertex_buffer.data.at(at_vertex + 3) = shifted_x / (size_x); // offset the position to start from 0 and then convert into 0 - 1 range
+				model.vertex_buffer.data.at(at_vertex + 4) = shifted_z / (size_z);
 
 				at_vertex += vertex_size;
 

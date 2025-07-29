@@ -29,6 +29,7 @@ struct MeshConstructInfo {
 class TerrainGenerator {
 	public:
 		TerrainGenerator(glm::uvec2 size, GLenum available_texture_unit);
+		~TerrainGenerator();
 		void generate();
 		void generate_test_triangle();
 		void cancle_generation();
@@ -47,10 +48,10 @@ class TerrainGenerator {
 
 	private:
 		void launch_workers();
-		void builder(int id, unsigned int size_x, unsigned int size_z, float start_z, float work_chunk_size, float distance_between_vertecies, float vertex_size, float normal_mult);
+		void builder(int id, unsigned int size_x, unsigned int size_z, float start_z, float work_chunk_size, float distance_between_vertecies, unsigned int vertex_size, float normal_mult);
 		void calculate_normals();
 	
-		std::future<void> workers;
+		std::thread workers;
 		gal::renderer_opengl::Buffer<float> heights;
 		std::unique_ptr<gal::renderer_opengl::Shader> normal_map_gen_shader;
 };

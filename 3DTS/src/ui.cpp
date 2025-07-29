@@ -49,7 +49,7 @@ void app_ui::DrawMenuBar() {
 			ImGui::MenuItem("Camera", NULL, &show_camera_settings_window);
 
 			if (ImGui::BeginMenu("Debug")) {
-				ImGui::Checkbox("Show debug window", &show_debug_window);
+				ImGui::MenuItem("Show debug window", NULL, &show_debug_window);
 				ImGui::EndMenu();
 			}
 
