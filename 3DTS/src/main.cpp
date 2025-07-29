@@ -23,7 +23,8 @@ void init() {
 
 	glm::ivec2 terr_size(100, 100);
 	terr_gen = std::make_unique<TerrainGenerator>(terr_size, GL_TEXTURE0);
-	terr_gen->noise.nodes.back().set_property("Feature Scale", 5.f);
+	// terr_gen->noise.nodes.back().set_property("Feature Scale", 5.f);
+	terr_gen->noise.scale = 15.f;
 	terr_gen->generate();
 
 	std::vector<gal::renderer_opengl::ShaderInfo> shader_infos = {
@@ -111,7 +112,8 @@ void ui() {
 void render() {
 	glm::vec2 new_size = main_camera.get_size();
 	if (new_size.x != opengl_output->output.size.x || new_size.y != opengl_output->output.size.y) {
-		opengl_output->output.update(new_size.x, new_size.y);
+		// opengl_output->output.update(new_size.x, new_size.y);
+		opengl_output->resize(new_size);
 	}
 	app.renderer->clear(std::ref(*opengl_output));
 	if (!terr_gen->construct_info.constructing.load()) {

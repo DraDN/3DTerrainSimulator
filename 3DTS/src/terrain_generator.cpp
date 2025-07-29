@@ -90,9 +90,9 @@ void TerrainGenerator::generate() {
 	APP_LOG_INFO("Cleared and resized buffers - model vertex buffer size: {}...", size_vertex_buffer);
 
 	glm::uvec2 normals_size = model_size;
+	normals_size += glm::uvec2(1);
 	normals_size.x *= normal_multiplication;
 	normals_size.y *= normal_multiplication;
-	normals_size += glm::uvec2(1);
 
 	normal_map.update(normals_size.x, normals_size.y);
 	heights.data.resize(normals_size.x * normals_size.y);
@@ -112,7 +112,8 @@ void TerrainGenerator::cancle_generation() {
 void TerrainGenerator::launch_workers() {
 	std::vector<std::future<void>> builders;
 
-	noise.get_uniform_grid_2d(heights.data.data(), (model_size.x) * normal_multiplication, (model_size.y) * normal_multiplication);
+	float axis_scale = 1.f / (float)normal_multiplication;
+	noise.get_uniform_grid_2d_scaled(heights.data.data(), (model_size.x +1) * normal_multiplication, (model_size.y +1) * normal_multiplication, axis_scale, axis_scale);
 
 	float start_z = -(float)(model_size.y)/2.f;
 	unsigned int length_z = std::floor((model_size.y+1) / construct_info.thread_num);
@@ -158,7 +159,19 @@ void TerrainGenerator::builder(int id, unsigned int size_x, unsigned int size_z,
 			// vertex positions
 			try {
 				model.vertex_buffer.data.at(at_vertex)     = x * distance_between_vertecies;
-				model.vertex_buffer.data.at(at_vertex + 1) = heights.data[at_vertex/vertex_size * normal_mult];
+				// Shift low-res coordinate from [-size_x/2 .. size_x/2] to [0 .. size_x]
+				float shifted_x = x + (size_x / 2.0f);
+				float shifted_z = z + (size_z / 2.0f);
+
+				// Scale to high-res grid by normal_mult (integer scale factor)
+				int high_x = static_cast<int>(shifted_x * normal_mult);
+				int high_z = static_cast<int>(shifted_z * normal_mult);
+
+				// Compute 1D index in high-res height array
+				size_t at_heights = high_x + high_z * ((size_x +1) * normal_mult);
+
+				// size_t at_heights = ((x + size_x/2.f) + (z + size_z/2.f) * size_x) * normal_mult;
+				model.vertex_buffer.data.at(at_vertex + 1) = heights.data[at_heights];
 				model.vertex_buffer.data.at(at_vertex + 2) = z * distance_between_vertecies;
 
 				// vertex texture coordonates

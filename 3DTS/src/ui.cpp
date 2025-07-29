@@ -138,7 +138,7 @@ void app_ui::DrawMeshConfigurationWindow() {
 void app_ui::DrawDebugWindows() {
 	if (!show_debug_window) return;
 
-	if (ImGui::Begin("Debug")) {
+	if (ImGui::Begin("Debug", &show_debug_window, WindowFlags_FixedAutoSize)) {
 		ImGui::Text("FPS - %.1f", ImGui::GetIO().Framerate);
 		ImGui::Text("Clear color - %f, %f, %f, %f", app.renderer->clear_color.r, app.renderer->clear_color.g, app.renderer->clear_color.b, app.renderer->clear_color.a);
 		glm::vec2 size = main_camera.get_size();

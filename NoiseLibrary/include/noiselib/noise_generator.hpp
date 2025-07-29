@@ -8,10 +8,11 @@
 
 class noiselib::NoiseGenerator {
 	public:
-		NoiseGenerator(float spacing = 0.1f, int seed = 1337);
+		NoiseGenerator(float scale = 0.1f, int seed = 1337);
 
 		void get_uniform_grid_2d(noiselib::AlignedVector<float>& outputv, int width, int height);
 		void get_uniform_grid_2d(float* outputv, int width, int height);
+		void get_uniform_grid_2d_scaled(float* outputv, int width, int height, float scaling_x, float scaling_y);
 		float get_single_2d(float x, float y);
 
 		class NoiseNode {
@@ -31,15 +32,27 @@ class noiselib::NoiseGenerator {
 					if (property_id == -1) return false;
 					return _set_property(property_id, value);
 				}
+
+				template <typename T>
+				FastNoise::Metadata::MemberVariable::ValueUnion get_property(T property) {
+					int property_id = resolve_property_id(property);
+					if (property_id == -1) return false;
+					return _get_property(property_id);
+				}
+
+				int get_property_id(const char* name) {
+					return resolve_property_id(name);
+				}
 			
 			private:
 				bool _set_property(size_t id, FastNoise::Metadata::MemberVariable::ValueUnion value);
+				FastNoise::Metadata::MemberVariable::ValueUnion _get_property(size_t id);
 				int resolve_property_id(size_t id);
 				int resolve_property_id(const char* name);
 		};
 
 		std::vector<NoiseNode> nodes;
 
-		float spacing;
+		float scale;
 		int seed;
 };
