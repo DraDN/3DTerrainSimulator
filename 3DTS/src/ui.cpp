@@ -18,6 +18,7 @@ extern bool render_window_hovered;
 bool show_debug_window = false;
 bool show_camera_settings_window = false;
 bool show_mesh_configuration_window = false;
+bool show_noise_editor = false;
 
 void app_ui::DrawRenderWindow() {
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
@@ -58,6 +59,7 @@ void app_ui::DrawMenuBar() {
 
 		if (ImGui::BeginMenu("Terrain Configuration")) {
 			ImGui::MenuItem("Mesh Configuration", NULL, &show_mesh_configuration_window);
+			ImGui::MenuItem("Noise Configuration", NULL, &show_noise_editor);
 			ImGui::EndMenu();
 		}
 
@@ -130,6 +132,238 @@ void app_ui::DrawMeshConfigurationWindow() {
 
 			ImGui::EndPopup();
 		}
+
+		ImGui::End();
+	}
+}
+
+ImVec2 position_to_add_new_node;
+
+static void destroy_links(bool del_key_pressed) {
+	std::vector<int> links_to_delete;
+	int selected_link_count = ImNodes::NumSelectedLinks();
+
+	if (selected_link_count && del_key_pressed) {
+		links_to_delete.resize(selected_link_count);
+		ImNodes::GetSelectedLinks(links_to_delete.data());
+	}
+
+	int destroyed_link_id;
+	if (ImNodes::IsLinkDestroyed(&destroyed_link_id))
+		links_to_delete.push_back(destroyed_link_id);
+
+	for (int delete_id : links_to_delete) {
+		APP_LOG_INFO("deleting link {}", delete_id);
+		if (delete_id == 0) {
+			terr_gen->noise.output = nullptr;
+			continue;
+		}
+
+		for (auto& node : terr_gen->noise.nodes) {
+			int attrib_id = node.second.get_starting_attrib_id();
+
+			for (FastNoise::NodeData* link : node.second.get_lookups()) {
+				(void)link;
+				if (attrib_id == delete_id) {
+					node.second.get_lookup(attrib_id) = nullptr;
+					APP_LOG_INFO("deleted attrib {} from node {}", attrib_id, node.second.id);
+				}
+				attrib_id++;
+			}
+		}
+	}
+}
+
+static void draw_nodes() {
+	for (auto& [node_id, node] : terr_gen->noise.nodes) {
+		ImNodes::BeginNode(node.id);
+
+		auto& data = node.node_data;
+		auto meta = data->metadata;
+
+		ImNodes::BeginNodeTitleBar();
+		ImGui::TextUnformatted(FastNoise::Metadata::FormatMetadataNodeName(meta).c_str());
+		ImNodes::EndNodeTitleBar();
+		
+		ImGui::PushItemWidth(90.f);
+		
+		int attribute_id = node.get_starting_attrib_id();
+		
+		std::string member_formated_name;
+		for (auto& memberNode : meta->memberNodeLookups) {
+			ImNodes::BeginInputAttribute(attribute_id++);
+			member_formated_name = FastNoise::Metadata::FormatMetadataMemberName(memberNode);
+			ImGui::TextUnformatted(member_formated_name.c_str());
+			ImNodes::EndInputAttribute();
+		}
+
+		for (size_t i = 0; i < meta->memberHybrids.size(); i++) {
+			ImNodes::BeginInputAttribute(attribute_id++);
+
+			bool is_linked = data->hybrids[i].first;
+			const char* float_format = "%.3f";
+
+			if (is_linked) {
+				float_format = "";
+			}
+
+			member_formated_name = FastNoise::Metadata::FormatMetadataMemberName(meta->memberHybrids[i]);
+
+			ImGui::DragFloat(member_formated_name.c_str(), &data->hybrids[i].second, meta->memberHybrids[i].valueUiDragSpeed, 0, 0, float_format);
+
+			ImNodes::EndInputAttribute();
+		}
+
+		size_t members_num = meta->memberVariables.size();
+		for (size_t mem_id = 0; mem_id < members_num; mem_id++) {
+			auto& mem = meta->memberVariables[mem_id];
+			member_formated_name = FastNoise::Metadata::FormatMetadataMemberName(mem);
+
+			switch (mem.type) {
+				case FastNoise::Metadata::MemberVariable::EFloat:
+					ImGui::DragFloat(member_formated_name.c_str(), &data->variables[mem_id].f, mem.valueUiDragSpeed, mem.valueMin.f, mem.valueMax.f);
+					break;
+				
+				case FastNoise::Metadata::MemberVariable::EInt:
+					ImGui::DragInt(member_formated_name.c_str(), &data->variables[mem_id].i, mem.valueUiDragSpeed, mem.valueMin.i, mem.valueMax.i);
+					break;
+
+				case FastNoise::Metadata::MemberVariable::EEnum:
+					ImGui::Combo(member_formated_name.c_str(), &data->variables[mem_id].i, mem.enumNames.begin(), (int)mem.enumNames.size());
+					break;
+			}
+
+		}
+		
+		ImGui::PopItemWidth();
+
+		ImNodes::BeginOutputAttribute(node.get_output_attrib_id());
+		ImNodes::EndOutputAttribute();
+
+		ImNodes::EndNode();
+	}
+}
+
+static void draw_output_node() {
+	ImNodes::BeginNode(0);
+	ImNodes::BeginNodeTitleBar();
+	ImGui::TextUnformatted("Output");
+	ImNodes::EndNodeTitleBar();
+
+	ImNodes::BeginInputAttribute(0);
+	ImNodes::EndInputAttribute();
+
+	ImNodes::EndNode();
+}
+
+static void draw_links() {
+	for (auto& [node_id, node] : terr_gen->noise.nodes) {
+		int attribute_id = node.get_starting_attrib_id();
+		auto links = node.get_lookups();
+
+		for (auto& link : links) {
+			if (link) {
+				auto& linked_node = terr_gen->noise.nodes.at(link);
+				ImNodes::Link(attribute_id, linked_node.get_output_attrib_id(), attribute_id);
+			}	
+			attribute_id++;
+		}
+	}
+
+	if (terr_gen->noise.output) {
+		auto& link = terr_gen->noise.nodes.at(terr_gen->noise.output);
+		ImNodes::Link(0, link.get_output_attrib_id(), 0);
+	}
+}
+
+static void add_node_popup() {
+	if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) && ImNodes::IsEditorHovered()) {
+		ImGui::OpenPopup("AddNodePopup");
+		position_to_add_new_node = ImGui::GetMousePos();
+	}
+	
+	if (ImGui::BeginPopup("AddNodePopup")) {
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(4,4));
+		int n = 0;
+		auto all_node_types = FastNoise::Metadata::GetAll();
+		for (auto type : all_node_types) {
+			const char* temp_name = std::to_string(n++).c_str();
+			const char* type_name = FastNoise::Metadata::FormatMetadataNodeName(type).c_str();
+			if (ImGui::MenuItem(type_name)) {
+				auto new_node = terr_gen->noise.add_node(type);
+				ImNodes::SetNodeEditorSpacePos(new_node->id, position_to_add_new_node);
+			}
+		}
+
+		ImGui::PopStyleVar();
+		ImGui::EndPopup();
+	}
+}
+
+static void delete_node(bool del_key_pressed) {
+	for (auto& [node_id, node] : terr_gen->noise.nodes) {
+		if (ImNodes::IsNodeSelected(node.id) && del_key_pressed) {
+			terr_gen->noise.delete_node(node);
+		}
+	}
+}
+
+static void create_links() {
+	int start_node_id, end_node_id;
+	int start_attr, end_attr;
+	bool create_from_snap;
+
+	if (ImNodes::IsLinkCreated(&start_node_id, &start_attr, &end_node_id, &end_attr, &create_from_snap)) {
+		noiselib::NoiseGenerator::NoiseNode* start_node = terr_gen->noise.get_node_from_id(start_node_id);
+		noiselib::NoiseGenerator::NoiseNode* end_node = terr_gen->noise.get_node_from_id(end_node_id);
+
+		if (start_node && end_node) {
+			auto& link = end_node->get_lookup(end_attr);
+
+			if (!create_from_snap || !link) {
+				link = start_node->node_data.get();
+				APP_LOG_INFO("link created between {} and {}", start_node_id, end_node_id);
+			}
+		} else if (end_node_id == 0) {
+			terr_gen->noise.output = start_node->node_data.get();
+		}
+	}
+}
+
+void app_ui::DrawNoiseNodeEditor() {
+	if (!show_noise_editor) return;
+
+	if (ImGui::Begin("Noise Editor", &show_noise_editor)) {
+		ImGui::PushItemWidth(100.f);
+		ImGui::InputFloat("Noise output axis scale", &terr_gen->noise.scale, 1.f, 10.f);
+		ImGui::SameLine();
+		ImGui::InputInt("Noise seed", &terr_gen->noise.seed);
+		ImGui::PopItemWidth();
+
+		bool del_key_pressed = ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Delete), false);
+
+		destroy_links(del_key_pressed);
+
+		ImNodes::BeginNodeEditor();
+
+		draw_nodes();
+		draw_output_node();
+
+		draw_links();
+		
+		add_node_popup();
+
+		ImNodes::MiniMap(0.2f, ImNodesMiniMapLocation_BottomRight);
+
+		ImNodes::EndNodeEditor();
+		
+		try {
+			delete_node(del_key_pressed);
+		} catch (std::runtime_error &e) {
+			APP_LOG_INFO("Error deleting node! {}", e.what());
+		}
+		
+		create_links();
 
 		ImGui::End();
 	}

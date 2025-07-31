@@ -42,6 +42,8 @@ void init() {
 	};
 
 	shader = std::make_unique<gal::renderer_opengl::Shader>(shader_infos, attribute_infos);
+
+	ImNodes::CreateContext();
 	APP_LOG_INFO("init() window function finished succesfully");
 }
 
@@ -106,6 +108,7 @@ void ui() {
 	app_ui::DrawRenderWindow();
 	app_ui::DrawCameraSettingsWindow();
 	app_ui::DrawMeshConfigurationWindow();
+	app_ui::DrawNoiseNodeEditor();
 	app_ui::DrawDebugWindows();
 }
 
@@ -127,6 +130,7 @@ void destroy() {
 	terr_gen.reset();
 	shader.reset();
 	opengl_output.reset();
+	ImNodes::DestroyContext();
 	return;
 }
 
