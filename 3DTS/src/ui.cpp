@@ -19,6 +19,7 @@ bool show_debug_window = false;
 bool show_camera_settings_window = false;
 bool show_mesh_configuration_window = false;
 bool show_noise_editor = false;
+bool show_materials_window = false;
 
 void app_ui::DrawRenderWindow() {
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
@@ -60,6 +61,7 @@ void app_ui::DrawMenuBar() {
 		if (ImGui::BeginMenu("Terrain Configuration")) {
 			ImGui::MenuItem("Mesh Configuration", NULL, &show_mesh_configuration_window);
 			ImGui::MenuItem("Noise Configuration", NULL, &show_noise_editor);
+			ImGui::MenuItem("Material Configuration", NULL, &show_materials_window);
 			ImGui::EndMenu();
 		}
 
@@ -138,6 +140,7 @@ void app_ui::DrawMeshConfigurationWindow() {
 }
 
 ImVec2 position_to_add_new_node;
+int node_id_to_add = -1;
 
 static void destroy_links(bool del_key_pressed) {
 	std::vector<int> links_to_delete;
@@ -277,6 +280,12 @@ static void draw_links() {
 }
 
 static void add_node_popup() {
+	if (node_id_to_add != -1) {
+		// ImNodes::SetNodeEditorSpacePos(node_id_to_add, position_to_add_new_node);
+		ImNodes::SetNodeScreenSpacePos(node_id_to_add, position_to_add_new_node);
+		node_id_to_add = -1;
+	}
+
 	if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) && ImNodes::IsEditorHovered()) {
 		ImGui::OpenPopup("AddNodePopup");
 		position_to_add_new_node = ImGui::GetMousePos();
@@ -291,7 +300,8 @@ static void add_node_popup() {
 			const char* type_name = FastNoise::Metadata::FormatMetadataNodeName(type).c_str();
 			if (ImGui::MenuItem(type_name)) {
 				auto new_node = terr_gen->noise.add_node(type);
-				ImNodes::SetNodeEditorSpacePos(new_node->id, position_to_add_new_node);
+				node_id_to_add = new_node->id;
+				// ImNodes::SetNodeEditorSpacePos(new_node->id, position_to_add_new_node);
 			}
 		}
 
@@ -367,6 +377,79 @@ void app_ui::DrawNoiseNodeEditor() {
 
 		ImGui::End();
 	}
+}
+
+void app_ui::DrawMaterialsWindow() {
+	if (!show_materials_window) return;
+
+	ImGui::Begin("Terrain Materials", &show_materials_window);
+
+	static int selected = 0;
+	{
+		ImGui::BeginGroup();
+		ImGui::BeginChild("left_pane", ImVec2(150, -25), true);
+
+		for (size_t i = 0; i < terr_gen->materials.data.size(); i++) {
+			std::string label = "Material " + std::to_string(i);
+			if (ImGui::Selectable(label.c_str(), selected == i)) {
+				selected = i;
+			}
+		}
+
+		ImGui::EndChild();
+
+		if (ImGui::Button("+")) {
+			// terrain.materials.push_back(MaterialCreate(2.f, 4.f, 10.f, glm::vec3(0.f, 0.f, 1.f)));
+			terr_gen->materials.data.push_back(Material());
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("-")) {
+			terr_gen->materials.data.erase(terr_gen->materials.data.begin() + selected);
+			selected += (selected > 0) ? -1 : 0;
+		}
+		ImGui::SameLine();
+		if (selected >= 1 && ImGui::Button("<")) {
+			std::iter_swap(terr_gen->materials.data.begin()+selected,
+						   terr_gen->materials.data.begin()+selected-1);
+		}
+		ImGui::SameLine();
+		if (selected < terr_gen->materials.data.size()-1 && ImGui::Button(">")) {
+			std::iter_swap(terr_gen->materials.data.begin()+selected,
+						   terr_gen->materials.data.begin()+selected+1);
+		}
+
+		ImGui::EndGroup();
+	}
+
+	ImGui::SameLine();
+
+	if (terr_gen->materials.data.size() > 0) {
+		ImGui::BeginGroup();
+		ImGui::PushItemWidth(ImGui::GetFontSize() * 10.f);
+
+		Material* selected_mat = &terr_gen->materials.data.at(selected);
+
+		ImGui::ColorEdit3("Albedo", &selected_mat->albedo.x, ImGuiColorEditFlags_NoInputs);
+		// ImGui::ColorEdit3("Diffuse", &selected_mat->diffuse.x, ImGuiColorEditFlags_NoInputs);
+		// ImGui::ColorEdit3("Specular", &selected_mat->specular.x, ImGuiColorEditFlags_NoInputs);
+
+		ImGui::Separator();
+
+		ImGui::InputFloat("Metallic", &selected_mat->metallic, 0.01f, 0.1f);
+
+		ImGui::InputFloat("Roughness", &selected_mat->roughness, 0.01f, 0.1f);
+		
+		ImGui::InputFloat("Blend", &selected_mat->blend, 1.f, 10.f);
+		
+		ImGui::InputFloat("Max height", &selected_mat->max_height, 0.5f, 1.f);
+
+		ImGui::EndGroup();
+
+		std::clamp(selected_mat->metallic, 0.f, 1.f);
+		std::clamp(selected_mat->roughness, 0.f, 1.f);
+	}
+	
+	ImGui::End();
 }
 
 void app_ui::DrawDebugWindows() {

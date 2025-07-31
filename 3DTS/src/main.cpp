@@ -1,5 +1,6 @@
 #include "gal/graphics_app_sdl_opengl.hpp"
 #include "gal/renderer_opengl/render_target.hpp"
+#include "gal/renderer_opengl/light.hpp"
 #include "noiselib/log.hpp"
 #include "terrain_generator.hpp"
 
@@ -15,6 +16,7 @@ std::unique_ptr<TerrainGenerator> terr_gen;
 std::unique_ptr<gal::renderer_opengl::Shader> shader;
 gal::renderer_opengl::ControllableCamera main_camera(size, glm::vec3(80.f), glm::vec3(0.f), 30.f);
 std::unique_ptr<gal::renderer_opengl::RenderTarget> opengl_output;
+std::unique_ptr<gal::renderer_opengl::Light> light;
 
 bool render_window_hovered = false;
 
@@ -44,6 +46,9 @@ void init() {
 	shader = std::make_unique<gal::renderer_opengl::Shader>(shader_infos, attribute_infos);
 
 	ImNodes::CreateContext();
+
+	light = std::make_unique<gal::renderer_opengl::Light>(0, glm::vec3(100.f));
+	
 	APP_LOG_INFO("init() window function finished succesfully");
 }
 
@@ -109,6 +114,7 @@ void ui() {
 	app_ui::DrawCameraSettingsWindow();
 	app_ui::DrawMeshConfigurationWindow();
 	app_ui::DrawNoiseNodeEditor();
+	app_ui::DrawMaterialsWindow();
 	app_ui::DrawDebugWindows();
 }
 
@@ -120,7 +126,7 @@ void render() {
 	}
 	app.renderer->clear(std::ref(*opengl_output));
 	if (!terr_gen->construct_info.constructing.load()) {
-		app.renderer->render(terr_gen->model, std::ref(*shader), std::ref(main_camera), std::ref(*opengl_output));
+		app.renderer->render(terr_gen->model, std::ref(*shader), std::ref(main_camera), std::ref(*opengl_output), std::ref(*light));
 	} 
 	gal::renderer_opengl::RenderTarget::bind_window_target(app.window->size);
 }
@@ -130,6 +136,7 @@ void destroy() {
 	terr_gen.reset();
 	shader.reset();
 	opengl_output.reset();
+	light.reset();
 	ImNodes::DestroyContext();
 	return;
 }

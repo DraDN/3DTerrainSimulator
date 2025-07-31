@@ -4,6 +4,7 @@
 #include <stdexcept>
 
 #define HEIGHTS_BUFFER_SHADER_BINDING_BASE 2
+#define MATERIALS_BUFFER_SHADER_BINDING_BASE 1
 
 TerrainGenerator::TerrainGenerator(glm::uvec2 size, GLenum available_texture_unit) :
 		normal_multiplication(1), distance_between_vertecies(1.f), model_size(size),
@@ -20,13 +21,13 @@ TerrainGenerator::TerrainGenerator(glm::uvec2 size, GLenum available_texture_uni
 			construct_info.ready_to_upload.store(false);
 		}
 		normal_map.bind();
-		// materials.upload_data();
+		materials.upload_data();
 		// POTENTIAL PROBLEM - materials.bind() needed(?)
-		// materials.bind_base(1);
+		materials.bind_base(MATERIALS_BUFFER_SHADER_BINDING_BASE);
 	};
 
 	model.unbind_callback = [&] {
-		// materials.unbind_base(1);
+		materials.unbind_base(MATERIALS_BUFFER_SHADER_BINDING_BASE);
 	};
 
 	std::vector<gal::renderer_opengl::VertexAttribute> vert_atts = {
@@ -46,6 +47,7 @@ TerrainGenerator::TerrainGenerator(glm::uvec2 size, GLenum available_texture_uni
 	normal_map_gen_shader = std::make_unique<gal::renderer_opengl::Shader>(shader_information, std::vector<gal::renderer_opengl::ShaderAttribute>());
 
 	materials.data.emplace_back();
+	materials.data.back().albedo = glm::vec3(1.f, 0.f, 0.f);
 
 	construct_info.thread_num = std::max(std::thread::hardware_concurrency() -2, 1u);
 	construct_info.reset();

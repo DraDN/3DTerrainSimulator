@@ -8,5 +8,6 @@ namespace app_ui {
 	void DrawCameraSettingsWindow();
 	void DrawMeshConfigurationWindow();
 	void DrawNoiseNodeEditor();
+	void DrawMaterialsWindow();
 	void DrawDebugWindows();
 };

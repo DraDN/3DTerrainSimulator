@@ -5,9 +5,6 @@ void gal::renderer_opengl::Light::send_shader_uniforms(Shader& shader) {
 	shader.bind();
 	shader.set("light.position", position);
 	shader.set("light.color", color);
-	shader.set("light.ambient", ambient_intensity);
-	shader.set("light.diffuse", diffuse_intensity);
-	shader.set("light.specular", specular_intensity);
 	shader.set("light.projection", camera.get_projection());
 	shader.set("light.view", camera.get_view());
 }

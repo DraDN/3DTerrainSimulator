@@ -11,15 +11,16 @@ class gal::renderer_opengl::Light {
 		Light(GLenum depth_texture_unit,
 			  glm::vec3 pos = glm::vec3(1.f),
 			  glm::vec2 size = glm::vec3(100.f),
-			  glm::vec3 color = glm::vec3(1.f),
-			  float aI = 1.f,
-			  float dI = 1.f,
-			  float sI = 1.f) : 
+			  glm::vec3 color = glm::vec3(1.f) ) :
+			//   float aI = 1.f,
+			//   float dI = 1.f,
+			//   float sI = 1.f) : 
 			  	position(pos), color(color),
-				ambient_intensity(aI), diffuse_intensity(dI), specular_intensity(sI),
+				// ambient_intensity(aI), diffuse_intensity(dI), specular_intensity(sI),
+				// TODO: change size to depth_map_resolution
 				camera(size, pos, glm::vec3(0.f)),
-				depth_map_resolution(1024*4),
-				render_target(GL_DEPTH_ATTACHMENT, glm::uvec2(depth_map_resolution), GL_RGBA16, GL_RGBA, GL_FLOAT, depth_texture_unit) {};
+				depth_map_resolution(1024*4) {};
+				// render_target(GL_DEPTH_ATTACHMENT, glm::uvec2(depth_map_resolution), GL_RGBA16, GL_RGBA, GL_FLOAT, depth_texture_unit) {};
 
 		void send_shader_uniforms(Shader& shader);
 
@@ -27,10 +28,10 @@ class gal::renderer_opengl::Light {
 		void set_position(glm::vec3 new_pos);
 
 		glm::vec3 color;
-		float ambient_intensity, diffuse_intensity, specular_intensity;
+		// float ambient_intensity, diffuse_intensity, specular_intensity;
 		
 		// bool use_shadow_offset = true;
-		RenderTarget render_target;
+		// RenderTarget render_target;
 		
 	private:
 		glm::vec3 position;
